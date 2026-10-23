@@ -8,6 +8,7 @@ import { useStore } from '../../lib/store.tsx'
 export function BoardPage() {
     const { state, today, createBooking } = useStore()
     const [focus, setFocus] = useState(today)
+    const [focusJob, setFocusJob] = useState<string | null>(null)
     const [open, setOpen] = useState(false)
     const [roles, setRoles] = useState<string[]>(['Team Leader', 'Traffic Controller'])
     const [form, setForm] = useState({
@@ -39,7 +40,6 @@ export function BoardPage() {
                     {open ? 'Close form' : 'New job'}
                 </button>
             </header>
-            <WeekRoster date={focus} onDate={setFocus} />
             {open && (
                 <form className="card form" onSubmit={onSubmit}>
                     <div className="form-row">
@@ -121,7 +121,12 @@ export function BoardPage() {
                     <button type="submit" className="btn btn-amber">Put it on the board</button>
                 </form>
             )}
-            <RosterBoard focusDate={focus} onFocusDate={setFocus} />
+            <RosterBoard focusDate={focus} onFocusDate={setFocus} focusJob={focusJob} />
+            <WeekRoster
+                date={focus}
+                onDate={(day) => { setFocus(day); setFocusJob(null) }}
+                onOpenJob={(id, day) => { setFocus(day); setFocusJob(id) }}
+            />
         </div>
     )
 }

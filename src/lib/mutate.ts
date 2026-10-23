@@ -32,6 +32,18 @@ function replaceBooking(state: AppState, booking: Booking): AppState {
     return { ...state, bookings: state.bookings.map((item) => (item.id === booking.id ? booking : item)) }
 }
 
+function issueKey(issue: { level: string; code: string; message: string }) {
+    return `${issue.level}:${issue.code}:${issue.message}`
+}
+
+function crewIssues(state: AppState, booking: Booking) {
+    const vehicle = booking.vehicleId ? findVehicle(state, booking.vehicleId) : null
+    return [
+        ...booking.slots.flatMap((slot) => slotIssues(state, booking, slot)),
+        ...(vehicle ? vehicleIssues(state, booking, vehicle) : []),
+    ]
+}
+
 function locked(state: AppState, booking: Booking) {
     const hasDocket = state.dockets.some((docket) => docket.bookingId === booking.id && docket.status !== 'queried')
     if (booking.invoiceId || hasDocket) {
@@ -194,6 +206,111 @@ export function moveBooking(state: AppState, bookingId: string, date: string): R
     const warning = issues.find((issue) => issue.level === 'warn')
     if (warning) return ok(next, `${booking.title} moved. ${warning.message}`, 'warn')
     return ok(next, `${booking.title} is on ${date}.`)
+}
+
+export type BookingPatch = {
+    title: string
+    clientId: string
+    site: string
+    depot: string
+    date: string
+    start: string
+    end: string
+    notes: string
+}
+
+export function updateBooking(state: AppState, id: string, patch: BookingPatch): Result {
+    const booking = state.bookings.find((item) => item.id === id)
+    if (!booking) return ok(state, 'That job is not on the board.', 'bad')
+    const block = locked(state, booking)
+    if (block) return ok(state, block, 'bad')
+    if (!patch.title.trim() || !patch.clientId || !patch.date || !patch.start || !patch.end) {
+        return ok(state, 'A job needs a name, a client, a day and hours.', 'bad')
+    }
+    const nextBooking: Booking = {
+        ...booking,
+        title: patch.title.trim(),
+        clientId: patch.clientId,
+        site: patch.site.trim(),
+        depot: patch.depot,
+        date: patch.date,
+        start: patch.start,
+        end: patch.end,
+        notes: patch.notes.trim(),
+    }
+    const trial = replaceBooking(state, nextBooking)
+    const before = crewIssues(state, booking)
+    const after = crewIssues(trial, nextBooking)
+    const already = new Set(before.filter((issue) => issue.level === 'block').map(issueKey))
+    const freshBlocks = after.filter((issue) => issue.level === 'block' && !already.has(issueKey(issue)))
+    if (freshBlocks.length) return ok(state, freshBlocks.map((issue) => issue.message).join(' '), 'bad')
+    const saved = log(trial, 'system', `Updated ${nextBooking.title}.`)
+    const alreadyWarn = new Set(before.filter((issue) => issue.level === 'warn').map(issueKey))
+    const freshWarns = after.filter((issue) => issue.level === 'warn' && !alreadyWarn.has(issueKey(issue)))
+    if (freshWarns.length) return ok(saved, `${nextBooking.title} saved. ${freshWarns.map((issue) => issue.message).join(' ')}`, 'warn')
+    return ok(saved, `${nextBooking.title} saved.`)
+}
+
+export function addSlot(state: AppState, id: string, role: string): Result {
+    const booking = state.bookings.find((item) => item.id === id)
+    if (!booking) return ok(state, 'That job is not on the board.', 'bad')
+    const block = locked(state, booking)
+    if (block) return ok(state, block, 'bad')
+    const slotRole = role.trim() || 'Traffic Controller'
+    const nextBooking: Booking = {
+        ...booking,
+        slots: [...booking.slots, { id: uid('slot'), role: slotRole, personId: null, response: null }],
+    }
+    return ok(
+        log(replaceBooking(state, nextBooking), 'system', `Added a ${slotRole} slot on ${booking.title}.`),
+        `${slotRole} slot added to ${booking.title}.`,
+    )
+}
+
+export function removeSlot(state: AppState, id: string, slotId: string): Result {
+    const booking = state.bookings.find((item) => item.id === id)
+    const slot = booking?.slots.find((item) => item.id === slotId)
+    if (!booking || !slot) return ok(state, 'That slot is gone.', 'bad')
+    const block = locked(state, booking)
+    if (block) return ok(state, block, 'bad')
+    if (booking.slots.length <= 1) return ok(state, 'A job needs at least one slot.', 'bad')
+    if (slot.personId) return ok(state, 'Take the person off this slot first.', 'bad')
+    const nextBooking: Booking = { ...booking, slots: booking.slots.filter((item) => item.id !== slotId) }
+    return ok(
+        log(replaceBooking(state, nextBooking), 'system', `Removed a ${slot.role} slot from ${booking.title}.`),
+        `${slot.role} slot removed.`,
+    )
+}
+
+export function setSlotRole(state: AppState, id: string, slotId: string, role: string): Result {
+    const booking = state.bookings.find((item) => item.id === id)
+    const slot = booking?.slots.find((item) => item.id === slotId)
+    if (!booking || !slot) return ok(state, 'That slot is gone.', 'bad')
+    const block = locked(state, booking)
+    if (block) return ok(state, block, 'bad')
+    if (slot.role === role) return ok(state, `${role} is already on this slot.`)
+    const person = slot.personId ? findPerson(state, slot.personId) : null
+    const trialSlot = { ...slot, role }
+    const issues = person ? validateAssignment(state, booking, trialSlot, person) : []
+    const stopped = issues.filter((issue) => issue.level === 'block')
+    if (stopped.length) return ok(state, stopped.map((issue) => issue.message).join(' '), 'bad')
+    const nextBooking: Booking = {
+        ...booking,
+        slots: booking.slots.map((item) => (item.id === slotId ? trialSlot : item)),
+    }
+    const saved = log(replaceBooking(state, nextBooking), 'system', `${booking.title} slot is now ${role}.`)
+    const warnings = issues.filter((issue) => issue.level === 'warn')
+    if (warnings.length) return ok(saved, `Slot is now ${role}. ${warnings.map((issue) => issue.message).join(' ')}`, 'warn')
+    return ok(saved, `Slot is now ${role}.`)
+}
+
+export function deleteBooking(state: AppState, id: string): Result {
+    const booking = state.bookings.find((item) => item.id === id)
+    if (!booking) return ok(state, 'That job is already off the board.', 'warn')
+    const block = locked(state, booking)
+    if (block) return ok(state, block, 'bad')
+    const next = { ...state, bookings: state.bookings.filter((item) => item.id !== id) }
+    return ok(log(next, 'system', `${booking.title} taken off the board.`), `${booking.title} is off the board.`)
 }
 
 export type NewPerson = {

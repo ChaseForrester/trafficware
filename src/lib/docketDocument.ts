@@ -97,7 +97,7 @@ export function docketInnerHtml(model: DocketModel) {
       <p class="ds-line">TGS / TMP number ________________________________ &nbsp; Drawn by ______________________</p>
       <p>${esc(conduct.field)}</p>
     </section>
-    <section>
+    <section class="ds-rules">
       <h2>What this record has to satisfy</h2>
       <p><strong>National.</strong> ${esc(NATIONAL.standard)} ${esc(NATIONAL.austroads)}</p>
       <p><strong>${esc(conduct.id)} · ${esc(conduct.authority)}.</strong> ${esc(conduct.instrument)}</p>
@@ -147,9 +147,13 @@ const DOCKET_CSS = `
   .ds-head, .ds-sign { display: flex; justify-content: space-between; gap: 24px; }
   .ds-no { text-align: right; }
   .ds-no strong { display: block; font-size: 20px; }
-  .ds-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 18px; margin-top: 16px; }
-  .drow { display: flex; justify-content: space-between; gap: 12px; border-bottom: 1px solid #e2dbd4; padding: 4px 0; }
-  .drow span { color: #5c6370; }
+  .ds-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 16px; }
+  .drow { display: grid; gap: 2px; padding: 8px 10px; border: 1px solid #e4ddd4; border-radius: 8px; background: #faf8f5; }
+  .drow span { color: #6b6258; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; }
+  .drow strong { font-size: 15px; }
+  .ds-rules { margin-top: 18px; padding: 12px 14px; background: #f6f4f2; border-radius: 10px; font-size: 13px; color: #4a453f; }
+  .ds-rules h2 { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; margin: 0 0 8px; }
+  .ds-rules p { margin: 0 0 6px; }
   .ds-line { border-bottom: 1px solid #282c35; padding-bottom: 8px; }
   .ds-flag, .ds-note { background: #f6f4f2; padding: 8px 10px; }
   .ds-checks { list-style: none; padding: 0; }

@@ -11,7 +11,7 @@ const OPEN = 6 * 60
 const CLOSE = 19 * 60
 const HOURS = Array.from({ length: 13 }, (_, index) => OPEN + index * 60)
 
-export function WeekRoster({ date, onDate }: { date: string; onDate: (iso: string) => void }) {
+export function WeekRoster({ date, onDate, onOpenJob }: { date: string; onDate: (iso: string) => void; onOpenJob?: (id: string, day: string) => void }) {
     const store = useStore()
     const { state } = store
     const start = startOfWeek(date)
@@ -68,7 +68,7 @@ export function WeekRoster({ date, onDate }: { date: string; onDate: (iso: strin
                                 onDrop={(event) => onDrop(event, day)}
                             >
                                 {state.bookings.filter((booking) => booking.date === day).map((booking) => (
-                                    <JobBlock key={booking.id} state={state} booking={booking} onOpen={() => onDate(day)} />
+                                    <JobBlock key={booking.id} state={state} booking={booking} onOpen={() => (onOpenJob ? onOpenJob(booking.id, day) : onDate(day))} />
                                 ))}
                             </div>
                         ))}

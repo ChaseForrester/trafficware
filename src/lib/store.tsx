@@ -15,6 +15,11 @@ import {
     completeOnboarding,
     createBooking,
     moveBooking,
+    updateBooking,
+    addSlot,
+    removeSlot,
+    setSlotRole,
+    deleteBooking,
     createInvoices,
     queryDocket,
     recordCloseout,
@@ -35,6 +40,7 @@ import {
     pushIntegration,
     type DemoInput,
     type DocketInput,
+    type BookingPatch,
     type NewBooking,
     type NewClient,
     type NewPerson,
@@ -57,6 +63,11 @@ type StoreValue = {
     setVehicle: (bookingId: string, vehicleId: string | null) => Result
     createBooking: (input: NewBooking) => Result
     moveBooking: (bookingId: string, date: string) => Result
+    updateBooking: (id: string, patch: BookingPatch) => Result
+    addSlot: (id: string, role: string) => Result
+    removeSlot: (id: string, slotId: string) => Result
+    setSlotRole: (id: string, slotId: string, role: string) => Result
+    deleteBooking: (id: string) => Result
     addPerson: (input: NewPerson) => Result
     updatePerson: (id: string, patch: Partial<Person>) => Result
     addSkill: (personId: string, name: string, expires: string) => Result
@@ -158,6 +169,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         setVehicle: (bookingId, vehicleId) => commit(setVehicle(stateRef.current, bookingId, vehicleId)),
         createBooking: (input) => commit(createBooking(stateRef.current, input)),
         moveBooking: (bookingId, date) => commit(moveBooking(stateRef.current, bookingId, date)),
+        updateBooking: (id, patch) => commit(updateBooking(stateRef.current, id, patch)),
+        addSlot: (id, role) => commit(addSlot(stateRef.current, id, role)),
+        removeSlot: (id, slotId) => commit(removeSlot(stateRef.current, id, slotId)),
+        setSlotRole: (id, slotId, role) => commit(setSlotRole(stateRef.current, id, slotId, role)),
+        deleteBooking: (id) => commit(deleteBooking(stateRef.current, id)),
         addPerson: (input) => commit(addPerson(stateRef.current, input)),
         updatePerson: (id, patch) => commit(updatePerson(stateRef.current, id, patch)),
         addSkill: (personId, name, expires) => commit(addSkill(stateRef.current, personId, name, expires)),

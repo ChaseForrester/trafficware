@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
-import { TechStack } from '../components/Icons.tsx'
+import { Logo } from '../components/Logo.tsx'
 import { useTitle } from '../components/useTitle.ts'
 import { AU_STATES, NATIONAL, conductFor, type AuState } from '../lib/conduct.ts'
 import { conductIndexHtml, docketInnerHtml, docketPackHtml, docketStandaloneHtml, downloadHtml, type DocketModel } from '../lib/docketDocument.ts'
@@ -93,14 +93,38 @@ function blankModel(companyName: string, abn: string, region: AuState): DocketMo
 }
 
 function DocketScreen({ children }: { children: ReactNode }) {
+    const { session } = useSession()
+    const home = session?.role === 'field' ? '/field' : '/app/closeout'
+    const homeLabel = session?.role === 'field' ? 'My jobs' : 'Office'
+
     return (
         <main className="docket-page">
-            <div className="stack-bar no-print">
-                <TechStack />
-            </div>
+            <header className="docket-head no-print">
+                <Logo to="/" />
+                <p className="docket-head-title">Dockets</p>
+                <nav>
+                    <Link to={home}>{homeLabel}</Link>
+                    <Link to="/dockets">This day</Link>
+                    <Link to="/dockets/blank">Blank</Link>
+                    <Link to="/dockets/codes">State codes</Link>
+                </nav>
+            </header>
             {children}
         </main>
     )
+}
+
+function docketDays(state: AppState, personId: string | null) {
+    const days = new Set<string>()
+    const seen = new Set<string>()
+    for (const docket of [...state.dockets, ...state.outbox]) {
+        if (seen.has(docket.id)) continue
+        seen.add(docket.id)
+        if (personId && docket.personId !== personId) continue
+        const booking = state.bookings.find((item) => item.id === docket.bookingId)
+        if (booking) days.add(booking.date)
+    }
+    return [...days].sort()
 }
 
 function findDocket(state: AppState, id: string) {
@@ -173,9 +197,13 @@ export function DocketPack() {
     const { state, today } = useStore()
     const { session } = useSession()
     const [params] = useSearchParams()
-    const [date, setDate] = useState(params.get('date') || today)
     const [region, setRegion] = useState<AuState>(session?.state ?? 'VIC')
     const mine = session?.role === 'field' ? session.personId : null
+    const days = docketDays(state, mine)
+    const requested = params.get('date')
+    const fallback = days.includes(today) ? today : (days.at(-1) ?? today)
+    const [date, setDate] = useState(requested || fallback)
+    const [openId, setOpenId] = useState<string | null>(null)
     const seen = new Set<string>()
     const dockets = [...state.dockets, ...state.outbox].filter((docket) => {
         if (seen.has(docket.id)) return false
@@ -186,17 +214,17 @@ export function DocketPack() {
         return true
     })
     const models = dockets.map((docket) => toDocketModel(state, docket, region, session))
-    const company = companyOf(state, session)
+    const selected = models.find((model) => model.number === openId) ?? models[0] ?? null
 
     return (
         <DocketScreen>
             <div className="docket-tools no-print">
-                <Link to={mine ? '/field' : '/app/closeout'}>Back</Link>
                 <label className="field">
                     Day
-                    <input type="date" value={date} onChange={(event) => setDate(event.target.value)} />
+                    <input type="date" value={date} onChange={(event) => { setDate(event.target.value); setOpenId(null) }} />
                 </label>
                 <StateSelect value={region} onChange={setRegion} />
+                <p className="docket-count">{models.length} filed · {conductFor(region).name}</p>
                 <button type="button" className="btn btn-primary btn-small" onClick={() => window.print()} disabled={!models.length}>Print this day</button>
                 <button
                     type="button"
@@ -206,16 +234,47 @@ export function DocketPack() {
                 >
                     Download this day
                 </button>
-                <Link className="btn btn-ghost btn-small" to="/dockets/blank">Blank sheet</Link>
-                <Link className="btn btn-ghost btn-small" to="/dockets/codes">All state codes</Link>
             </div>
-            <p className="no-print muted">
-                {mine ? 'Your dockets only. ' : 'Office pack. '}
-                {prettyDate(date)} · {conductFor(region).name}. The sheet names the ACCC and the {region} instrument. It is not a copy of the manual.
-            </p>
-            {models.map((model) => <Sheet key={model.number} model={model} />)}
-            {!models.length && <p>No docket is filed for {prettyDate(date)}.</p>}
-            <p className="no-print"><button type="button" className="btn btn-ghost btn-small" onClick={() => downloadHtml(`${company.companyName}-codes.html`, conductIndexHtml(company.companyName))}>Download the code index</button></p>
+            <div className="docket-desk">
+                <aside className="docket-list no-print">
+                    <h2>{prettyDate(date)}</h2>
+                    {models.map((model) => (
+                        <button
+                            key={model.number}
+                            type="button"
+                            className={selected?.number === model.number ? 'docket-pick on' : 'docket-pick'}
+                            onClick={() => setOpenId(model.number)}
+                        >
+                            <strong>{model.worker || 'Unsigned'}</strong>
+                            <span>{model.job}</span>
+                            <small>{model.hours || '—'}h · {model.status}</small>
+                        </button>
+                    ))}
+                    {!models.length && <p className="muted">Nothing filed on this day.</p>}
+                </aside>
+                <div className="docket-stage">
+                    {selected ? (
+                        <div className="docket-live">
+                            <Sheet model={selected} />
+                        </div>
+                    ) : (
+                        <div className="docket-empty no-print">
+                            <h1>No docket is filed for {prettyDate(date)}.</h1>
+                            <p>The sheets for this yard are on the days below.</p>
+                            <div className="docket-jumps">
+                                {days.map((day) => (
+                                    <button key={day} type="button" className="btn btn-ghost btn-small" onClick={() => { setDate(day); setOpenId(null) }}>
+                                        {prettyDate(day)}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                    <div className="docket-print-pack">
+                        {models.map((model) => <Sheet key={model.number} model={model} />)}
+                    </div>
+                </div>
+            </div>
         </DocketScreen>
     )
 }

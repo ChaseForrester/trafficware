@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react'
-import type { DragEvent } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import type { DragEvent, FormEvent } from 'react'
 import { rosterPlan } from '../lib/bots.ts'
 import { addDays, cx, prettyDate, prettyLong, round1, startOfWeek } from '../lib/format.ts'
 import { Avatar } from './Avatar.tsx'
@@ -7,7 +7,7 @@ import { useGrok } from './GrokDock.tsx'
 import { IconKicker } from './Icons.tsx'
 import { findClient, findPerson, slotIssues, statusFor, vehicleIssues, weekHours } from '../lib/rules.ts'
 import { useStore } from '../lib/store.tsx'
-import type { Booking } from '../types.ts'
+import { ROLES, type Booking } from '../types.ts'
 
 const STATUS_LABEL = {
     planning: 'Open',
@@ -18,7 +18,7 @@ const STATUS_LABEL = {
     invoiced: 'Invoiced',
 } as const
 
-export function RosterBoard({ compact = false, focusDate, onFocusDate }: { compact?: boolean; focusDate?: string; onFocusDate?: (iso: string) => void }) {
+export function RosterBoard({ compact = false, focusDate, onFocusDate, focusJob }: { compact?: boolean; focusDate?: string; onFocusDate?: (iso: string) => void; focusJob?: string | null }) {
     const store = useStore()
     const grok = useGrok()
     const { state, today } = store
@@ -30,6 +30,7 @@ export function RosterBoard({ compact = false, focusDate, onFocusDate }: { compa
     }
     const [depot, setDepot] = useState('All')
     const [over, setOver] = useState<string | null>(null)
+    const [picked, setPicked] = useState<string | null>(null)
     const [showBot, setShowBot] = useState(false)
     const plan = useMemo(() => rosterPlan(state, date, depot), [state, date, depot])
     const days = Array.from({ length: 7 }, (_, index) => addDays(startOfWeek(date), index))
@@ -130,7 +131,11 @@ export function RosterBoard({ compact = false, focusDate, onFocusDate }: { compa
                 </div>
             )}
 
-            <p className="muted drag-hint">Drag a person onto a slot, or use the assign list. Both paths run the same checks.</p>
+            <p className="muted drag-hint">
+                {picked
+                    ? `${people.find((person) => person.id === picked)?.name ?? 'Crew'} is selected. Press Place on an empty slot, or tap them again to clear.`
+                    : 'Tap a person, then Place them on an empty slot. Drag still works, and so does the assign list.'}
+            </p>
 
             <div className="board-grid">
                 <aside className="pool">
@@ -141,8 +146,18 @@ export function RosterBoard({ compact = false, focusDate, onFocusDate }: { compa
                         return (
                             <div
                                 key={person.id}
-                                className={cx('chip', unavailable && 'dim')}
+                                className={cx('chip', unavailable && 'dim', picked === person.id && 'on')}
+                                role="button"
+                                tabIndex={0}
+                                aria-pressed={picked === person.id}
                                 draggable
+                                onClick={() => setPicked((current) => (current === person.id ? null : person.id))}
+                                onKeyDown={(event) => {
+                                    if (event.key === 'Enter' || event.key === ' ') {
+                                        event.preventDefault()
+                                        setPicked((current) => (current === person.id ? null : person.id))
+                                    }
+                                }}
                                 onDragStart={(event) => {
                                     event.dataTransfer.setData('text/person-id', person.id)
                                     event.dataTransfer.setData('text/plain', person.id)
@@ -173,6 +188,8 @@ export function RosterBoard({ compact = false, focusDate, onFocusDate }: { compa
                             setOver={setOver}
                             onDrop={onDrop}
                             people={people}
+                            picked={picked}
+                            focused={focusJob === booking.id}
                         />
                     ))}
                 </div>
@@ -187,22 +204,50 @@ function JobCard({
     setOver,
     onDrop,
     people,
+    picked,
+    focused,
 }: {
     booking: Booking
     over: string | null
     setOver: (id: string | null) => void
     onDrop: (event: DragEvent<HTMLDivElement>, bookingId: string, slotId: string) => void
     people: { id: string; name: string }[]
+    picked: string | null
+    focused: boolean
 }) {
     const store = useStore()
     const { state } = store
+    const card = useRef<HTMLElement>(null)
     const client = findClient(state, booking.clientId)
     const status = statusFor(state, booking)
     const vehicle = state.vehicles.find((item) => item.id === booking.vehicleId)
     const truckIssues = vehicle ? vehicleIssues(state, booking, vehicle) : []
+    const locked = Boolean(booking.invoiceId) || state.dockets.some((docket) => docket.bookingId === booking.id && docket.status !== 'queried')
+    const pickedName = people.find((person) => person.id === picked)?.name ?? 'crew'
+    const [editing, setEditing] = useState(false)
+    const [draft, setDraft] = useState({
+        title: booking.title,
+        clientId: booking.clientId,
+        site: booking.site,
+        depot: booking.depot,
+        date: booking.date,
+        start: booking.start,
+        end: booking.end,
+        notes: booking.notes,
+    })
+
+    useEffect(() => {
+        if (focused) card.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+    }, [focused])
+
+    function saveJob(event: FormEvent) {
+        event.preventDefault()
+        const result = store.updateBooking(booking.id, draft)
+        if (result.tone !== 'bad') setEditing(false)
+    }
 
     return (
-        <article className="job">
+        <article className={cx('job', focused && 'on')} ref={card} id={`job-${booking.id}`}>
             <header className="job-head">
                 <div>
                     <p className="kicker">
@@ -215,12 +260,98 @@ function JobCard({
                 </div>
                 <span className={`badge badge-${status}`}>{STATUS_LABEL[status]}</span>
             </header>
+            {locked && <p className="issue warn">This job has dockets or an invoice. Query the docket before changing the crew.</p>}
+            {!locked && (
+                <div className="job-actions">
+                    <button
+                        type="button"
+                        className="btn btn-ghost btn-small"
+                        onClick={() => {
+                            setDraft({
+                                title: booking.title,
+                                clientId: booking.clientId,
+                                site: booking.site,
+                                depot: booking.depot,
+                                date: booking.date,
+                                start: booking.start,
+                                end: booking.end,
+                                notes: booking.notes,
+                            })
+                            setEditing((open) => !open)
+                        }}
+                    >
+                        {editing ? 'Close edit' : 'Edit job'}
+                    </button>
+                    <button type="button" className="btn btn-ghost btn-small" onClick={() => store.addSlot(booking.id, 'Traffic Controller')}>
+                        Add slot
+                    </button>
+                    <button
+                        type="button"
+                        className="text-btn danger"
+                        onClick={() => {
+                            if (window.confirm(`Take ${booking.title} off the board?`)) store.deleteBooking(booking.id)
+                        }}
+                    >
+                        Take off the board
+                    </button>
+                </div>
+            )}
+            {editing && !locked && (
+                <form className="form job-edit" onSubmit={saveJob}>
+                    <div className="form-row">
+                        <label className="field">
+                            Job name
+                            <input value={draft.title} onChange={(event) => setDraft({ ...draft, title: event.target.value })} required />
+                        </label>
+                        <label className="field">
+                            Client
+                            <select value={draft.clientId} onChange={(event) => setDraft({ ...draft, clientId: event.target.value })}>
+                                {state.clients.map((item) => (
+                                    <option key={item.id} value={item.id}>{item.name}</option>
+                                ))}
+                            </select>
+                        </label>
+                    </div>
+                    <label className="field">
+                        Site
+                        <input value={draft.site} onChange={(event) => setDraft({ ...draft, site: event.target.value })} />
+                    </label>
+                    <div className="form-row">
+                        <label className="field">
+                            Depot
+                            <select value={draft.depot} onChange={(event) => setDraft({ ...draft, depot: event.target.value })}>
+                                {state.settings.depots.map((depot) => (
+                                    <option key={depot}>{depot}</option>
+                                ))}
+                            </select>
+                        </label>
+                        <label className="field">
+                            Date
+                            <input type="date" value={draft.date} onChange={(event) => setDraft({ ...draft, date: event.target.value })} required />
+                        </label>
+                        <label className="field">
+                            Start
+                            <input type="time" value={draft.start} onChange={(event) => setDraft({ ...draft, start: event.target.value })} required />
+                        </label>
+                        <label className="field">
+                            End
+                            <input type="time" value={draft.end} onChange={(event) => setDraft({ ...draft, end: event.target.value })} required />
+                        </label>
+                    </div>
+                    <label className="field">
+                        Notes
+                        <input value={draft.notes} onChange={(event) => setDraft({ ...draft, notes: event.target.value })} />
+                    </label>
+                    <button type="submit" className="btn btn-primary btn-small">Save job</button>
+                </form>
+            )}
             <div className="slots">
                 {booking.slots.map((slot) => {
                     const person = findPerson(state, slot.personId)
                     const issues = slotIssues(state, booking, slot)
                     const blocked = issues.some((issue) => issue.level === 'block')
                     const warned = issues.some((issue) => issue.level === 'warn')
+                    const roles = (ROLES as readonly string[]).includes(slot.role) ? ROLES : [slot.role, ...ROLES]
                     return (
                         <div
                             key={slot.id}
@@ -232,12 +363,30 @@ function JobCard({
                             onDrop={(event) => onDrop(event, booking.id, slot.id)}
                         >
                             <div className="slot-top">
-                                <strong>{slot.role}</strong>
-                                {person && (
-                                    <button type="button" className="text-btn" onClick={() => store.unassignPerson(booking.id, slot.id)}>
-                                        Remove
-                                    </button>
-                                )}
+                                <label className="field slot-role">
+                                    Role
+                                    <select
+                                        value={slot.role}
+                                        disabled={locked}
+                                        onChange={(event) => store.setSlotRole(booking.id, slot.id, event.target.value)}
+                                    >
+                                        {roles.map((role) => (
+                                            <option key={role}>{role}</option>
+                                        ))}
+                                    </select>
+                                </label>
+                                <span className="slot-actions">
+                                    {person && (
+                                        <button type="button" className="text-btn" disabled={locked} onClick={() => store.unassignPerson(booking.id, slot.id)}>
+                                            Remove
+                                        </button>
+                                    )}
+                                    {!person && booking.slots.length > 1 && (
+                                        <button type="button" className="text-btn" disabled={locked} onClick={() => store.removeSlot(booking.id, slot.id)}>
+                                            Drop slot
+                                        </button>
+                                    )}
+                                </span>
                             </div>
                             {person ? (
                                 <p className="slot-person">
@@ -246,22 +395,30 @@ function JobCard({
                                     <em>{slot.response}</em>
                                 </p>
                             ) : (
-                                <label className="field">
-                                    Assign
-                                    <select
-                                        value=""
-                                        onChange={(event) => {
-                                            if (event.target.value) store.assignPerson(booking.id, slot.id, event.target.value)
-                                        }}
-                                    >
-                                        <option value="">Choose crew</option>
-                                        {people.map((personOption) => (
-                                            <option key={personOption.id} value={personOption.id}>
-                                                {personOption.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </label>
+                                <>
+                                    {picked && !locked && (
+                                        <button type="button" className="btn btn-primary btn-small" onClick={() => store.assignPerson(booking.id, slot.id, picked)}>
+                                            Place {pickedName}
+                                        </button>
+                                    )}
+                                    <label className="field">
+                                        Assign
+                                        <select
+                                            value=""
+                                            disabled={locked}
+                                            onChange={(event) => {
+                                                if (event.target.value) store.assignPerson(booking.id, slot.id, event.target.value)
+                                            }}
+                                        >
+                                            <option value="">Choose crew</option>
+                                            {people.map((personOption) => (
+                                                <option key={personOption.id} value={personOption.id}>
+                                                    {personOption.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </label>
+                                </>
                             )}
                             {issues.map((issue) => (
                                 <p key={issue.code} className={issue.level === 'block' ? 'issue bad' : 'issue warn'}>
@@ -276,6 +433,7 @@ function JobCard({
                 Vehicle
                 <select
                     value={booking.vehicleId ?? ''}
+                    disabled={locked}
                     onChange={(event) => store.setVehicle(booking.id, event.target.value || null)}
                 >
                     <option value="">No vehicle</option>
@@ -292,7 +450,7 @@ function JobCard({
                     {issue.message}
                 </p>
             ))}
-            {booking.notes && <p className="muted">{booking.notes}</p>}
+            {booking.notes && !editing && <p className="muted">{booking.notes}</p>}
         </article>
     )
 }

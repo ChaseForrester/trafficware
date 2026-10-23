@@ -760,7 +760,32 @@ img {
 }
 
 .chip {
-  cursor: grab;
+  cursor: pointer;
+}
+
+.chip.on {
+  border-color: #f34f27;
+  box-shadow: 0 0 0 2px rgba(243, 79, 39, 0.35);
+}
+
+.job.on {
+  box-shadow: 0 0 0 2px #f34f27;
+}
+
+.job-actions,
+.slot-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.slot-role {
+  min-width: 0;
+}
+
+.text-btn.danger {
+  color: var(--danger);
 }
 
 .chip.dim {
@@ -2921,9 +2946,135 @@ code {
 }
 
 .docket-page {
-  max-width: 920px;
+  max-width: 1180px;
   margin: 0 auto;
-  padding: 24px 16px 72px;
+  padding: 0 16px 72px;
+  background: #efeae3;
+  min-height: 100dvh;
+  color: #282c35;
+}
+
+[data-theme="night"] .docket-page {
+  background: #141820;
+  color: #f4f0ea;
+}
+
+[data-theme="night"] .docket-count {
+  color: #c8c2ba;
+}
+
+.docket-head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 0 -16px 18px;
+  padding: 14px 16px;
+  background: #171a20;
+  color: #f4f0ea;
+}
+
+.docket-head .brand,
+.docket-head .brand span,
+.docket-head a {
+  color: #f4f0ea;
+}
+
+.docket-head nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-left: auto;
+}
+
+.docket-head a {
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.docket-head a:hover {
+  color: #ffb089;
+}
+
+.docket-head-title {
+  margin: 0;
+  font-size: 14px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #ffb089;
+}
+
+.docket-count {
+  margin: 0;
+  flex: 1;
+  min-width: 180px;
+  color: #5c564e;
+  font-size: 14px;
+}
+
+.docket-desk {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.docket-list {
+  display: grid;
+  gap: 8px;
+  position: sticky;
+  top: 12px;
+}
+
+.docket-list h2 {
+  margin: 0 0 4px;
+  font-size: 22px;
+}
+
+.docket-pick {
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  padding: 12px;
+  text-align: left;
+  color: #282c35;
+  background: #fff;
+  border: 1px solid #e2dbd4;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.docket-pick.on {
+  border-color: #f34f27;
+  box-shadow: 0 0 0 2px rgba(243, 79, 39, 0.25);
+}
+
+.docket-pick span,
+.docket-pick small {
+  color: #5c564e;
+}
+
+.docket-empty {
+  padding: 28px;
+  background: #fff;
+  border: 1px solid #e2dbd4;
+  border-radius: 16px;
+  color: #282c35;
+}
+
+.docket-empty h1 {
+  margin: 0 0 8px;
+  font-size: 28px;
+}
+
+.docket-jumps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.docket-print-pack {
+  display: none;
 }
 
 .docket-tools {
@@ -2984,20 +3135,48 @@ code {
 .docket-sheet .ds-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 6px 18px;
+  gap: 8px;
   margin-top: 16px;
 }
 
 .docket-sheet .drow {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 4px 0;
-  border-bottom: 1px solid #e2dbd4;
+  display: grid;
+  gap: 2px;
+  padding: 8px 10px;
+  border: 1px solid #e4ddd4;
+  border-radius: 8px;
+  background: #faf8f5;
 }
 
 .docket-sheet .drow span {
-  color: #5c6370;
+  color: #6b6258;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.docket-sheet .drow strong {
+  font-size: 15px;
+}
+
+.docket-sheet .ds-rules {
+  margin-top: 18px;
+  padding: 12px 14px;
+  background: #f6f4f2;
+  border-radius: 10px;
+  color: #4a453f;
+  font-size: 13px;
+}
+
+.docket-sheet .ds-rules h2 {
+  margin: 0 0 8px;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.docket-sheet .ds-rules p {
+  margin: 0 0 6px;
 }
 
 .docket-sheet .ds-line {
@@ -3025,11 +3204,26 @@ code {
 @media (max-width: 800px) {
 
   .role-grid,
+  .docket-desk,
   .docket-sheet .ds-grid,
   .docket-sheet .ds-head,
   .docket-sheet .ds-sign {
     grid-template-columns: 1fr;
     display: grid;
+  }
+
+  .docket-list {
+    position: static;
+  }
+
+  .docket-head {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .docket-head nav {
+    margin-left: 0;
+    width: 100%;
   }
 }
 
@@ -3121,8 +3315,20 @@ code {
   .docket-page {
     display: block;
     background: #fff;
+    color: #282c35;
     padding: 0;
     max-width: none;
+  }
+
+  .docket-live,
+  .docket-list,
+  .docket-head,
+  .docket-tools {
+    display: none !important;
+  }
+
+  .docket-print-pack {
+    display: block;
   }
 
   .docket-sheet {
