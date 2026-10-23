@@ -1,3 +1,6 @@
+import { Icon } from './Icons.tsx'
+import type { IconName } from './Icons.tsx'
+
 export type StepIconName = 'job' | 'block' | 'bot' | 'phone' | 'sign' | 'invoice'
 
 const stroke = {
@@ -68,15 +71,21 @@ export function DoneTick() {
     )
 }
 
-const LETTERS: Record<string, string> = {
-    Xero: 'Xe',
-    'Payroll file': 'Pf',
-    GPS: 'Gp',
-    Tickets: 'Tc',
-    'HR onboarding': 'Hr',
-    Stripe: 'St',
+const ICONS: Record<string, IconName> = {
+    Xero: 'xero',
+    'Payroll file': 'payroll',
+    GPS: 'gps',
+    Tickets: 'ticket',
+    'HR onboarding': 'hr',
+    Stripe: 'card',
 }
 
 export function IntegrationMark({ name }: { name: string }) {
-    return <b className="brand-mark" aria-hidden="true">{LETTERS[name] ?? name.slice(0, 2)}</b>
+    const icon = ICONS[name]
+    if (!icon) return <b className="brand-mark" aria-hidden="true">{name.slice(0, 2)}</b>
+    return (
+        <span className="brand-mark" aria-hidden="true">
+            <Icon name={icon} />
+        </span>
+    )
 }

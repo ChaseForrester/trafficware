@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { Avatar } from '../../components/Avatar.tsx'
 import { useGrok } from '../../components/GrokDock.tsx'
+import { IconKicker } from '../../components/Icons.tsx'
 import { closeoutReview, invoiceDrafts, payrollRows } from '../../lib/bots.ts'
 import { downloadCsv, money, prettyDate, round1 } from '../../lib/format.ts'
 import { findPerson, statusFor } from '../../lib/rules.ts'
@@ -36,7 +38,7 @@ export function Closeout() {
         <div className="page-pad">
             <header className="page-title">
                 <div>
-                    <p className="kicker">Close-out bot</p>
+                    <IconKicker name="closeout">Close-out bot</IconKicker>
                     <h1>Dockets, payroll, invoices</h1>
                 </div>
                 <label className="field inline">
@@ -90,7 +92,7 @@ export function Closeout() {
                                 const hours = round1(Math.max(0, duration(docket.start, docket.end) - docket.breakMins / 60))
                                 return (
                                     <div key={docket.id} className="docket">
-                                        <strong>{person?.name}</strong>
+                                        <p className="person-id">{person ? <Avatar person={person} size="sm" /> : null}<strong>{person?.name}</strong></p>
                                         <p className="muted">{docket.start}–{docket.end} · break {docket.breakMins}m · {hours}h pay · {docket.status}</p>
                                         {docket.notes && <p>{docket.notes}</p>}
                                         {docket.nearMiss && <p className="issue warn">Near miss: {docket.nearMiss}{docket.photoName ? ` · ${docket.photoName}` : ''}</p>}
@@ -121,7 +123,7 @@ export function Closeout() {
             <section className="card page-gap">
                 <div className="job-head">
                     <div>
-                        <p className="kicker">Payroll</p>
+                        <IconKicker name="payroll">Payroll</IconKicker>
                         <h2>Approved hours on {prettyDate(date)}</h2>
                     </div>
                     <button type="button" className="btn btn-ghost btn-small" onClick={exportPayroll}>Download payroll CSV</button>
@@ -141,7 +143,7 @@ export function Closeout() {
             <section className="card page-gap">
                 <div className="job-head">
                     <div>
-                        <p className="kicker">Invoices</p>
+                        <IconKicker name="invoice">Invoices</IconKicker>
                         <h2>Charge-out against wage cost</h2>
                     </div>
                     <button type="button" className="btn btn-amber btn-small" onClick={() => store.createInvoices()}>Create invoices</button>

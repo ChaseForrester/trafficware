@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useRef, useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
 import { useLocation } from 'react-router-dom'
 import type { AppState } from '../types.ts'
+import { IconKicker } from './Icons.tsx'
 import { currentIdToken, hasStoredAuth } from '../lib/auth.ts'
 import { askGrok, grokHealth, loadPin, savePin } from '../lib/grok.ts'
 import type { GrokActor, GrokCall, GrokTurn } from '../lib/grok.ts'
@@ -236,7 +237,7 @@ export function GrokProvider({ children }: { children: ReactNode }) {
                     >
                         <header className="grok-head">
                             <div>
-                                <p className="kicker">Grok</p>
+                                <IconKicker name="xai">Grok</IconKicker>
                                 <h2 id="grok-title">Ask the yard</h2>
                             </div>
                             <button type="button" className="btn btn-ghost btn-small" onClick={() => setOpen(false)}>Close</button>

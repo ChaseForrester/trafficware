@@ -1,11 +1,14 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
+import { IconKicker } from '../../components/Icons.tsx'
 import { RosterBoard } from '../../components/RosterBoard.tsx'
+import { WeekRoster } from '../../components/WeekRoster.tsx'
 import { ROLES } from '../../types.ts'
 import { useStore } from '../../lib/store.tsx'
 
 export function BoardPage() {
     const { state, today, createBooking } = useStore()
+    const [focus, setFocus] = useState(today)
     const [open, setOpen] = useState(false)
     const [roles, setRoles] = useState<string[]>(['Team Leader', 'Traffic Controller'])
     const [form, setForm] = useState({
@@ -33,13 +36,14 @@ export function BoardPage() {
         <div className="page-pad">
             <header className="page-title">
                 <div>
-                    <p className="kicker">Booking board</p>
-                    <h1>Roster the shift</h1>
+                    <IconKicker name="board">Drag-and-drop rostering</IconKicker>
+                    <h1>Week view, then the day board</h1>
                 </div>
                 <button type="button" className="btn btn-primary btn-small" onClick={() => setOpen((value) => !value)}>
                     {open ? 'Close form' : 'New job'}
                 </button>
             </header>
+            <WeekRoster date={focus} onDate={setFocus} />
             {open && (
                 <form className="card form" onSubmit={onSubmit}>
                     <div className="form-row">
@@ -121,7 +125,7 @@ export function BoardPage() {
                     <button type="submit" className="btn btn-amber">Put it on the board</button>
                 </form>
             )}
-            <RosterBoard />
+            <RosterBoard focusDate={focus} onFocusDate={setFocus} />
         </div>
     )
 }

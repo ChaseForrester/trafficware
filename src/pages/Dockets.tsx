@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react'
+import type { ReactNode } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
+import { TechStack } from '../components/Icons.tsx'
 import { useTitle } from '../components/useTitle.ts'
 import { AU_STATES, NATIONAL, conductFor, type AuState } from '../lib/conduct.ts'
 import { conductIndexHtml, docketInnerHtml, docketPackHtml, docketStandaloneHtml, downloadHtml, type DocketModel } from '../lib/docketDocument.ts'
@@ -90,6 +92,17 @@ function blankModel(companyName: string, abn: string, region: AuState): DocketMo
     }
 }
 
+function DocketScreen({ children }: { children: ReactNode }) {
+    return (
+        <main className="docket-page">
+            <div className="stack-bar no-print">
+                <TechStack />
+            </div>
+            {children}
+        </main>
+    )
+}
+
 function findDocket(state: AppState, id: string) {
     return state.dockets.find((item) => item.id === id) ?? state.outbox.find((item) => item.id === id) ?? null
 }
@@ -120,20 +133,20 @@ export function DocketSheet() {
 
     if (!docket) {
         return (
-            <main className="docket-page">
+            <DocketScreen>
                 <p>That docket is not on this device.</p>
                 <Link to="/dockets">Back to the pack</Link>
-            </main>
+            </DocketScreen>
         )
     }
 
     if (session?.role === 'field' && docket.personId !== session.personId) {
         return (
-            <main className="docket-page">
+            <DocketScreen>
                 <h1>This docket is not yours.</h1>
                 <p>Field access shows only the dockets you signed.</p>
                 <Link to="/field">Back to my jobs</Link>
-            </main>
+            </DocketScreen>
         )
     }
 
@@ -141,7 +154,7 @@ export function DocketSheet() {
     const back = session?.role === 'field' ? '/field' : '/app/closeout'
 
     return (
-        <main className="docket-page">
+        <DocketScreen>
             <div className="docket-tools no-print">
                 <Link to={back}>Back</Link>
                 <StateSelect value={region} onChange={setRegion} />
@@ -151,7 +164,7 @@ export function DocketSheet() {
                 </button>
             </div>
             <Sheet model={model} />
-        </main>
+        </DocketScreen>
     )
 }
 
@@ -176,7 +189,7 @@ export function DocketPack() {
     const company = companyOf(state, session)
 
     return (
-        <main className="docket-page">
+        <DocketScreen>
             <div className="docket-tools no-print">
                 <Link to={mine ? '/field' : '/app/closeout'}>Back</Link>
                 <label className="field">
@@ -203,7 +216,7 @@ export function DocketPack() {
             {models.map((model) => <Sheet key={model.number} model={model} />)}
             {!models.length && <p>No docket is filed for {prettyDate(date)}.</p>}
             <p className="no-print"><button type="button" className="btn btn-ghost btn-small" onClick={() => downloadHtml(`${company.companyName}-codes.html`, conductIndexHtml(company.companyName))}>Download the code index</button></p>
-        </main>
+        </DocketScreen>
     )
 }
 
@@ -216,7 +229,7 @@ export function DocketBlank() {
     const model = blankModel(company.companyName, company.abn, region)
 
     return (
-        <main className="docket-page">
+        <DocketScreen>
             <div className="docket-tools no-print">
                 <Link to="/dockets">Back</Link>
                 <StateSelect value={region} onChange={setRegion} />
@@ -226,7 +239,7 @@ export function DocketBlank() {
                 </button>
             </div>
             <Sheet model={model} />
-        </main>
+        </DocketScreen>
     )
 }
 
@@ -237,7 +250,7 @@ export function DocketCodes() {
     const company = companyOf(state, session)
 
     return (
-        <main className="docket-page">
+        <DocketScreen>
             <div className="docket-tools no-print">
                 <Link to="/dockets">Back</Link>
                 <button type="button" className="btn btn-primary btn-small" onClick={() => window.print()}>Print</button>
@@ -266,6 +279,6 @@ export function DocketCodes() {
                     )
                 })}
             </article>
-        </main>
+        </DocketScreen>
     )
 }

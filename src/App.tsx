@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react'
 import type { ReactNode } from 'react'
 import { Link, Navigate, Route, Routes } from 'react-router-dom'
 import { GrokProvider } from './components/GrokDock.tsx'
+import { IconKicker, TechStack } from './components/Icons.tsx'
 import { Marketing } from './components/Marketing.tsx'
 import { Splash } from './components/Splash.tsx'
 import { Toast } from './components/Toast.tsx'
@@ -100,6 +101,10 @@ export default function App() {
 function Missing() {
   return (
     <main className="wrap page">
+      <div className="stack-bar">
+        <TechStack />
+      </div>
+      <IconKicker name="alert">Missing</IconKicker>
       <h1 className="display">That page is not on the site.</h1>
       <Link to="/">Back home</Link>
     </main>

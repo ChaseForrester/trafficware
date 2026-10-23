@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
+import { IconKicker } from '../../components/Icons.tsx'
 import { useStore } from '../../lib/store.tsx'
 
 export function Settings() {
@@ -30,7 +31,7 @@ export function Settings() {
         <div className="page-pad">
             <header className="page-title">
                 <div>
-                    <p className="kicker">Configurations</p>
+                    <IconKicker name="rules">Configurations</IconKicker>
                     <h1>Rules the board enforces</h1>
                 </div>
             </header>
@@ -72,7 +73,7 @@ export function Settings() {
                 </form>
             </section>
             <section className="card page-gap">
-                <p className="kicker">Central database</p>
+                <IconKicker name="cloud">Central database</IconKicker>
                 <h2>Saved in this browser</h2>
                 <p>
                     Firebase is not connected. The store reads and writes through <code>src/lib/persistence.ts</code>.

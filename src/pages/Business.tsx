@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { IconKicker } from '../components/Icons.tsx'
 import { AuthorityRow, CheckRow, ClientRow, IntegrationRow, RoleStories } from '../components/RoleStories.tsx'
 import { useTitle } from '../components/useTitle.ts'
 
@@ -31,7 +32,7 @@ export function Business() {
                 <img src="/photos/au-night.jpg" alt="Night lane closure on an Australian road, with an arrow board, cones and crew in high-visibility clothing." />
                 <div className="billboard-shade" />
                 <div className="wrap story-hero-copy">
-                    <p className="kicker kicker-on-dark">Page for the business</p>
+                    <IconKicker name="office" className="kicker-on-dark">Page for the business</IconKicker>
                     <h1>Run the company from the office.</h1>
                     <p className="lede">This is the Super Admin page. The person on the tools has a different page and never sees this one. You hold the board, the rates, the dockets and the invoice.</p>
                     <div className="hero-actions">
@@ -43,7 +44,7 @@ export function Business() {
 
             <section className="section wrap">
                 <div className="section-head">
-                    <p className="kicker">Three bots, one yard</p>
+                    <IconKicker name="bot">Three bots, one yard</IconKicker>
                     <h2>The office runs two of them. The phone runs the third.</h2>
                     <p className="lede">The roster bot fills the board. The field sync bot only delivers a shift that already passed. The close-out bot turns the signed docket into pay lines and a client invoice.</p>
                 </div>
@@ -52,7 +53,7 @@ export function Business() {
 
             <section className="section wrap">
                 <div className="section-head">
-                    <p className="kicker">What the roster bot checks</p>
+                    <IconKicker name="rules">What the roster bot checks</IconKicker>
                     <h2>Six reasons a name stays off the job.</h2>
                     <p className="lede">These are the same checks as the strip under the homepage, written out. The crew page does not show this desk. An offer arrives only after the checks have passed.</p>
                 </div>
@@ -61,7 +62,7 @@ export function Business() {
 
             <section className="section wrap">
                 <div className="section-head">
-                    <p className="kicker">Councils and clients</p>
+                    <IconKicker name="clients">Councils and clients</IconKicker>
                     <h2>The job names the client. The docket names the state rule.</h2>
                     <p className="lede">City of Maribyrnong is a sample council on the Geelong job, not a login. The printable docket cites the instrument for the state the work was in. The sheet is not a copy of the manual.</p>
                 </div>
@@ -71,7 +72,7 @@ export function Business() {
 
             <section className="section wrap">
                 <div className="section-head">
-                    <p className="kicker">Same names as the office screen</p>
+                    <IconKicker name="integrations">Same names as the office screen</IconKicker>
                     <h2>Integrations the desk already recognises.</h2>
                     <p className="lede">Open them later under Integrations. The marks here are ours, so the name is familiar without borrowing another company’s logo. Field phones do not get these switches.</p>
                 </div>

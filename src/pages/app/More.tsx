@@ -1,14 +1,16 @@
 import { Link } from 'react-router-dom'
+import { Icon, IconKicker } from '../../components/Icons.tsx'
+import type { IconName } from '../../components/Icons.tsx'
 import { usePair } from '../../lib/pair.tsx'
 import { useStore } from '../../lib/store.tsx'
 
-const LINKS = [
-    { to: '/app/closeout', title: 'Close-out', detail: 'Dockets, pay and invoices' },
-    { to: '/app/fleet', title: 'Fleet and gear', detail: 'Trucks, cones and towers' },
-    { to: '/app/clients', title: 'Clients', detail: 'Who the jobs are for' },
-    { to: '/app/integrations', title: 'Exports', detail: 'Payroll and invoice files' },
-    { to: '/app/settings', title: 'Rules', detail: 'Hours, rest, depots, sample week' },
-    { to: '/', title: 'About the product', detail: 'The public site' },
+const LINKS: { to: string; title: string; detail: string; icon: IconName }[] = [
+    { to: '/app/closeout', title: 'Close-out', detail: 'Dockets, pay and invoices', icon: 'closeout' },
+    { to: '/app/fleet', title: 'Fleet and gear', detail: 'Trucks, cones and towers', icon: 'fleet' },
+    { to: '/app/clients', title: 'Clients', detail: 'Who the jobs are for', icon: 'clients' },
+    { to: '/app/integrations', title: 'Exports', detail: 'Payroll and invoice files', icon: 'integrations' },
+    { to: '/app/settings', title: 'Rules', detail: 'Hours, rest, depots, sample week', icon: 'rules' },
+    { to: '/', title: 'About the product', detail: 'The public site', icon: 'product' },
 ]
 
 export function More() {
@@ -20,7 +22,7 @@ export function More() {
         <div className="page-pad">
             <header className="page-title">
                 <div>
-                    <p className="kicker">More</p>
+                    <IconKicker name="more">More</IconKicker>
                     <h1>The two of you</h1>
                 </div>
             </header>
@@ -44,6 +46,7 @@ export function More() {
             <div className="more-list">
                 {LINKS.map((link) => (
                     <Link key={link.to} to={link.to} className="more-link">
+                        <Icon name={link.icon} />
                         <strong>{link.title}</strong>
                         <span>{link.detail}</span>
                     </Link>

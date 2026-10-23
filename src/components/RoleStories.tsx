@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom'
 import { BotMark } from './BotMark.tsx'
 import type { BotId } from './botPlays.ts'
+import { Icon } from './Icons.tsx'
+import type { IconName } from './Icons.tsx'
 import { IntegrationMark } from './Marks.tsx'
 
 type FigureKind = 'refuse' | 'fatigue' | 'closeout' | 'offer' | 'offline' | 'private'
@@ -161,11 +163,21 @@ export const CHECKS = [
     ['Invoice', 'Only those clean hours go to the client.'],
 ] as const
 
+const CHECK_ICONS: Record<(typeof CHECKS)[number][0], IconName> = {
+    Ticket: 'ticket',
+    Fatigue: 'fatigue',
+    Rest: 'rest',
+    Clash: 'clash',
+    Docket: 'dockets',
+    Invoice: 'invoice',
+}
+
 export function CheckRow() {
     return (
         <ul className="check-row">
             {CHECKS.map(([title, text]) => (
                 <li key={title}>
+                    <Icon name={CHECK_ICONS[title]} />
                     <strong>{title}</strong>
                     <span>{text}</span>
                 </li>

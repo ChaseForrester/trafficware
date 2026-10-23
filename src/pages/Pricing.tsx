@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { Icon, IconKicker } from '../components/Icons.tsx'
 import { useTitle } from '../components/useTitle.ts'
 
 const plans = [
@@ -28,7 +29,7 @@ export function Pricing() {
     return (
         <main className="wrap page">
             <header className="page-hero">
-                <p className="kicker">Pricing</p>
+                <IconKicker name="pricing">Pricing</IconKicker>
                 <h1 className="display">Month to month, sized by the yard.</h1>
                 <p className="lede">
                     These figures are for the demo workspace so you can see the shape of the offer. They are not a live checkout.
@@ -37,12 +38,12 @@ export function Pricing() {
             <div className="price-grid">
                 {plans.map((plan) => (
                     <article key={plan.name} className={plan.featured ? 'price featured' : 'price'}>
-                        <p className="kicker">{plan.name}</p>
+                        <IconKicker name="pricing">{plan.name}</IconKicker>
                         <p className="price-figure">{plan.price}</p>
                         <p className="muted">{plan.note}</p>
-                        <ul>
+                        <ul className="icon-list">
                             {plan.points.map((point) => (
-                                <li key={point}>{point}</li>
+                                <li key={point}><Icon name="check" /><span>{point}</span></li>
                             ))}
                         </ul>
                         <Link to="/demo" className={plan.featured ? 'btn btn-amber' : 'btn btn-ghost'}>
@@ -53,12 +54,12 @@ export function Pricing() {
             </div>
             <div className="card page-gap">
                 <h2>What every plan includes</h2>
-                <ul className="check-list">
-                    <li>People, skills, documents and employment status</li>
-                    <li>Drag-and-drop roster with clash, rest and fatigue checks</li>
-                    <li>Field accept / decline, digital dockets and near misses</li>
-                    <li>Offline outbox and a sync step you can see</li>
-                    <li>No lock-in story: the demo data is yours to reset</li>
+                <ul className="check-list icon-list">
+                    <li><Icon name="people" /><span>People, skills, documents and employment status</span></li>
+                    <li><Icon name="board" /><span>Drag-and-drop roster with clash, rest and fatigue checks</span></li>
+                    <li><Icon name="field" /><span>Field accept / decline, digital dockets and near misses</span></li>
+                    <li><Icon name="cloud" /><span>Offline outbox and a sync step you can see</span></li>
+                    <li><Icon name="check" /><span>No lock-in story: the demo data is yours to reset</span></li>
                 </ul>
                 <Link to="/app">Skip the form and open the sample yard</Link>
             </div>

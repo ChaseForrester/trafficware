@@ -10,7 +10,7 @@ import type {
 } from '../types.ts'
 import { invoiceDrafts, payrollRows, rosterPlan } from './bots.ts'
 import { addDays, round1, shiftHours, todayIso, uid } from './format.ts'
-import { findPerson, findVehicle, validateAssignment, vehicleIssues } from './rules.ts'
+import { findPerson, findVehicle, slotIssues, validateAssignment, vehicleIssues } from './rules.ts'
 
 export type Result = {
     state: AppState
@@ -177,6 +177,23 @@ export function createBooking(state: AppState, input: NewBooking): Result {
         }
     }
     return ok(next, `${booking.title} is on the board.`)
+}
+
+export function moveBooking(state: AppState, bookingId: string, date: string): Result {
+    const booking = state.bookings.find((item) => item.id === bookingId)
+    if (!booking) return ok(state, 'That job is not on the board.', 'bad')
+    if (booking.date === date) return ok(state, `${booking.title} is already on that day.`)
+    const block = locked(state, booking)
+    if (block) return ok(state, block, 'bad')
+    const moved: Booking = { ...booking, date }
+    const trial = replaceBooking(state, moved)
+    const issues = moved.slots.flatMap((slot) => slotIssues(trial, moved, slot))
+    const stopped = issues.find((issue) => issue.level === 'block')
+    if (stopped) return ok(state, stopped.message, 'bad')
+    const next = log(trial, 'system', `Moved ${booking.title} to ${date}.`)
+    const warning = issues.find((issue) => issue.level === 'warn')
+    if (warning) return ok(next, `${booking.title} moved. ${warning.message}`, 'warn')
+    return ok(next, `${booking.title} is on ${date}.`)
 }
 
 export type NewPerson = {

@@ -14,6 +14,7 @@ import {
     bookDemo,
     completeOnboarding,
     createBooking,
+    moveBooking,
     createInvoices,
     queryDocket,
     recordCloseout,
@@ -55,6 +56,7 @@ type StoreValue = {
     respond: (bookingId: string, slotId: string, response: 'accepted' | 'declined') => Result
     setVehicle: (bookingId: string, vehicleId: string | null) => Result
     createBooking: (input: NewBooking) => Result
+    moveBooking: (bookingId: string, date: string) => Result
     addPerson: (input: NewPerson) => Result
     updatePerson: (id: string, patch: Partial<Person>) => Result
     addSkill: (personId: string, name: string, expires: string) => Result
@@ -155,6 +157,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         respond: (bookingId, slotId, response) => commit(respond(stateRef.current, bookingId, slotId, response)),
         setVehicle: (bookingId, vehicleId) => commit(setVehicle(stateRef.current, bookingId, vehicleId)),
         createBooking: (input) => commit(createBooking(stateRef.current, input)),
+        moveBooking: (bookingId, date) => commit(moveBooking(stateRef.current, bookingId, date)),
         addPerson: (input) => commit(addPerson(stateRef.current, input)),
         updatePerson: (id, patch) => commit(updatePerson(stateRef.current, id, patch)),
         addSkill: (personId, name, expires) => commit(addSkill(stateRef.current, personId, name, expires)),

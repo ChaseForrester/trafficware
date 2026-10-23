@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link } from 'react-router-dom'
+import { Avatar } from '../components/Avatar.tsx'
+import { IconKicker } from '../components/Icons.tsx'
 import { useTitle } from '../components/useTitle.ts'
 import { cx, prettyDate, prettyWhen } from '../lib/format.ts'
 import { usePair } from '../lib/pair.tsx'
@@ -40,9 +42,12 @@ export function FieldApp() {
     return (
         <div className="page-pad field-app">
             <header className="page-title">
-                <div>
-                    <p className="kicker">Field</p>
-                    <h1>{person.name.split(' ')[0]}'s jobs</h1>
+                <div className="person-id">
+                    <Avatar person={person} size="lg" />
+                    <div>
+                        <IconKicker name="field">Field</IconKicker>
+                        <h1>{person.name.split(' ')[0]}'s jobs</h1>
+                    </div>
                 </div>
             </header>
             {!locked && <div className="who who-block" role="group" aria-label="Who is holding the phone">
@@ -54,7 +59,7 @@ export function FieldApp() {
                         aria-pressed={person.id === item.id}
                         onClick={() => pair.setHolder(item.id)}
                     >
-                        <span className="avatar sm" style={{ background: item.color }}>{item.name.split(' ').map((part) => part[0]).slice(0, 2).join('')}</span>
+                        <Avatar person={item} size="sm" />
                         <span>{item.name.split(' ')[0]}</span>
                     </button>
                 ))}
@@ -129,7 +134,7 @@ export function FieldApp() {
                     <p className="muted">These tickets are stored with the person, so they stay readable when the phone is offline.</p>
                     {person.skills.map((skill) => (
                         <article key={skill.id} className="card">
-                            <p className="kicker">On this phone</p>
+                            <IconKicker name="ticket">On this phone</IconKicker>
                             <h2>{skill.name}</h2>
                             <p>Expires {skill.expires}</p>
                             <p className="muted">{skill.document}</p>
@@ -140,7 +145,7 @@ export function FieldApp() {
             )}
             {tab === 'safety' && <SafetyForm personId={person.id} offers={offers.map((offer) => offer.booking.id)} />}
             <section className="card">
-                <p className="kicker">Outbox</p>
+                <IconKicker name="cloud">Outbox</IconKicker>
                 <h2>Waiting to sync</h2>
                 <ul className="feed">
                     {state.outbox.map((docket) => (
@@ -195,7 +200,7 @@ function DocketForm({
 
     return (
         <form className="phone-body form" onSubmit={onSubmit}>
-            <p className="kicker">Digital docket</p>
+            <IconKicker name="dockets">Digital docket</IconKicker>
             <h2>{booking.title}</h2>
             <label className="field">Start<input type="time" value={start} onChange={(event) => setStart(event.target.value)} /></label>
             <label className="field">Finish<input type="time" value={end} onChange={(event) => setEnd(event.target.value)} /></label>

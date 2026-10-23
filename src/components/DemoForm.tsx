@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
+import { IconKicker } from './Icons.tsx'
 import { useStore } from '../lib/store.tsx'
 
 const empty = { name: '', company: '', email: '', phone: '', crewSize: '15-40', note: '' }
@@ -21,7 +22,7 @@ export function DemoForm() {
     if (sent) {
         return (
             <div className="card">
-                <p className="kicker">Request received</p>
+                <IconKicker name="check">Request received</IconKicker>
                 <h3>It is in the office inbox.</h3>
                 <p className="muted">Open Today in the platform and you will see the request sitting with the live jobs.</p>
                 <button type="button" className="btn btn-ghost btn-small" onClick={() => setSent(false)}>

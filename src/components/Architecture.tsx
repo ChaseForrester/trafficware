@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom'
 import { BotMark } from './BotMark.tsx'
 import type { BotId } from './botPlays.ts'
+import { Icon } from './Icons.tsx'
+import type { IconName } from './Icons.tsx'
 
 type Box = {
     href: string
@@ -8,6 +10,7 @@ type Box = {
     kicker: string
     title: string
     tone: string
+    icon: IconName
     items: string[]
 }
 
@@ -18,6 +21,7 @@ const BOXES: Record<'admin' | 'board' | 'integrations' | 'mobile', Box> = {
         kicker: 'Super admin',
         title: 'Web platform',
         tone: 'arch-admin',
+        icon: 'office',
         items: ['People profiles', 'Skills and documents', 'Employment status', 'Configurations', 'Payroll rates'],
     },
     board: {
@@ -26,6 +30,7 @@ const BOXES: Record<'admin' | 'board' | 'integrations' | 'mobile', Box> = {
         kicker: 'Booking board',
         title: 'Employee roster',
         tone: 'arch-board',
+        icon: 'board',
         items: ['Drag-and-drop scheduling', 'Conflict and fatigue checks', 'Skill validation', 'Real-time availability'],
     },
     integrations: {
@@ -34,6 +39,7 @@ const BOXES: Record<'admin' | 'board' | 'integrations' | 'mobile', Box> = {
         kicker: 'Integrations',
         title: 'Accounts and HR',
         tone: 'arch-integrations',
+        icon: 'integrations',
         items: ['Xero / accounting', 'Employment Hero / payroll', 'GPS telematics', 'HR onboarding'],
     },
     mobile: {
@@ -42,6 +48,7 @@ const BOXES: Record<'admin' | 'board' | 'integrations' | 'mobile', Box> = {
         kicker: 'Mobile',
         title: 'Field crew',
         tone: 'arch-mobile',
+        icon: 'field',
         items: ['Job requests, accept or decline', 'Digital dockets and forms', 'Photos and near misses', 'Offline documents'],
     },
 }
@@ -64,7 +71,7 @@ export function Architecture({ playLinks = false }: { playLinks?: boolean }) {
                 duties={['Timesheet review', 'Payroll export', 'Invoice generation']}
             />
             <Link to={playLinks ? '/#how' : '/app'} className="arch-card arch-cloud">
-                <span className="kicker">Single source of truth</span>
+                <span className="kicker"><Icon name="cloud" /> Single source of truth</span>
                 <strong>Central database</strong>
                 <span>Jobs, people, trucks and dockets. The bots read and write this record. They do not keep a second copy.</span>
             </Link>
@@ -84,7 +91,7 @@ export function Architecture({ playLinks = false }: { playLinks?: boolean }) {
 function ArchCard({ box, playLinks }: { box: Box; playLinks: boolean }) {
     return (
         <Link to={playLinks ? box.play : box.href} className={`arch-card ${box.tone}`}>
-            <span className="kicker">{box.kicker}</span>
+            <span className="kicker"><Icon name={box.icon} /> {box.kicker}</span>
             <strong>{box.title}</strong>
             <ul>
                 {box.items.map((item) => (

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Architecture } from '../components/Architecture.tsx'
+import { IconKicker } from '../components/Icons.tsx'
 import { BotMark } from '../components/BotMark.tsx'
 import { useTitle } from '../components/useTitle.ts'
 
@@ -8,7 +9,7 @@ export function Platform() {
     return (
         <main className="wrap page">
             <header className="page-hero">
-                <p className="kicker">Platform</p>
+                <IconKicker name="platform">Platform</IconKicker>
                 <h1 className="display">One database. Three bots. The whole shift.</h1>
                 <p className="lede">
                     The office, the roster and the field read and write the same jobs. The bots do not keep a second copy.
@@ -46,7 +47,7 @@ export function Platform() {
                 </article>
             </div>
             <article className="card page-gap">
-                <p className="kicker">Database</p>
+                <IconKicker name="cloud">Database</IconKicker>
                 <h2>On this device for now.</h2>
                 <p>
                     The workspace saves in the browser. When you add Firebase, replace the load and save functions in

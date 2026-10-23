@@ -1,7 +1,9 @@
 import { Link } from 'react-router-dom'
+import { Avatar } from '../../components/Avatar.tsx'
 import { useGrok } from '../../components/GrokDock.tsx'
+import { Icon, IconKicker } from '../../components/Icons.tsx'
 import { buildAlerts } from '../../lib/bots.ts'
-import { prettyWhen, round1 } from '../../lib/format.ts'
+import { addDays, cx, prettyLong, prettyWhen, round1 } from '../../lib/format.ts'
 import { usePair } from '../../lib/pair.tsx'
 import { statusFor, weekHours } from '../../lib/rules.ts'
 import { useStore } from '../../lib/store.tsx'
@@ -11,10 +13,24 @@ export function Dashboard() {
     const pair = usePair()
     const grok = useGrok()
     const todays = state.bookings.filter((booking) => booking.date === today)
+    const yesterday = addDays(today, -1)
+    const yesterdays = state.bookings.filter((booking) => booking.date === yesterday)
     const openSlots = todays.reduce((sum, booking) => sum + booking.slots.filter((slot) => !slot.personId).length, 0)
     const rostered = new Set(todays.flatMap((booking) => booking.slots.map((slot) => slot.personId).filter(Boolean))).size
     const toApprove = state.dockets.filter((docket) => docket.status === 'submitted').length
-    const alerts = buildAlerts(state, today).slice(0, 8)
+    const alerts = buildAlerts(state, today).slice(0, 6)
+    const weekStart = addDays(today, -6)
+    const weekBookings = state.bookings.filter((booking) => booking.date >= weekStart && booking.date <= today)
+    const weekSlots = weekBookings.flatMap((booking) => booking.slots)
+    const filled = weekSlots.filter((slot) => slot.personId).length
+    const open = weekSlots.length - filled
+    const onLeave = state.people.filter((person) => person.status === 'leave' || person.leaveDates.includes(today)).length
+    const active = state.people.filter((person) => person.status === 'active' && !person.leaveDates.includes(today)).length
+    const activeYesterday = state.people.filter((person) => person.status === 'active' && !person.leaveDates.includes(yesterday)).length
+    const expiring = countExpiring(state.people, today, state.settings.expiryWarningDays)
+    const expiringYesterday = countExpiring(state.people, yesterday, state.settings.expiryWarningDays)
+    const sparkJobs = Array.from({ length: 7 }, (_, index) => state.bookings.filter((booking) => booking.date === addDays(weekStart, index)).length)
+    const filledPct = weekSlots.length ? Math.round((filled / weekSlots.length) * 100) : 0
     const heavy = [...state.people]
         .map((person) => ({ person, hours: weekHours(state, person.id, today) }))
         .sort((a, b) => b.hours - a.hours)
@@ -24,16 +40,87 @@ export function Dashboard() {
         <div className="page-pad">
             <header className="page-title">
                 <div>
-                    <p className="kicker">Today</p>
+                    <IconKicker name="today">Overview</IconKicker>
                     <h1>{greeting()}{pair.holder ? `, ${pair.holder.name.split(' ')[0]}` : ''}</h1>
+                    <p className="muted">Here is the yard today. Counts are this workspace, not a sample chart.</p>
                 </div>
-                <Link to="/app/board" className="btn btn-primary btn-small">Jobs</Link>
+                <p className="hours-pill">{prettyLong(today)}</p>
             </header>
+            <div className="overview-kpis">
+                <Kpi icon="people" label="Active crew" value={active} note={delta(active, activeYesterday)} href="/app/people" series={sparkJobs} />
+                <Kpi icon="board" label="Today's jobs" value={todays.length} note={delta(todays.length, yesterdays.length)} href="/app/board" series={sparkJobs} />
+                <Kpi icon="ticket" label="Expiring tickets" value={expiring} note={delta(expiring, expiringYesterday)} href="/app/people" series={sparkJobs} tone={expiring ? 'bad' : 'ok'} />
+                <Kpi icon="dockets" label="Dockets to approve" value={toApprove} note={`${rostered} people rostered · ${openSlots} open slots`} href="/app/closeout" series={sparkJobs} />
+            </div>
+            <div className="split">
+                <section className="card">
+                    <IconKicker name="board">Roster use this week</IconKicker>
+                    <div className="util-row">
+                        <div
+                            className="donut"
+                            style={{ background: donut(filled, open) }}
+                            role="img"
+                            aria-label={`${filledPct}% of this week's slots are filled`}
+                        >
+                            <div className="donut-hole">
+                                <strong>{filledPct}%</strong>
+                                <span>Filled</span>
+                            </div>
+                        </div>
+                        <ul className="util-legend">
+                            <li><i className="swatch swatch-ok" /> Filled shifts <strong>{filled}</strong></li>
+                            <li><i className="swatch swatch-open" /> Open shifts <strong>{open}</strong></li>
+                            <li><i className="swatch swatch-leave" /> On leave <strong>{onLeave}</strong></li>
+                            <li><i className="swatch swatch-total" /> People <strong>{state.people.length}</strong></li>
+                        </ul>
+                    </div>
+                    <p className="muted">Filled and open are slots from the last 7 days. On leave is people, so it sits beside the ring.</p>
+                </section>
+                <section className="card" id="alerts">
+                    <div className="job-head">
+                        <IconKicker name="alert">Compliance alerts</IconKicker>
+                        <Link to="/app/people">People</Link>
+                    </div>
+                    <ul className="alert-list">
+                        {alerts.map((alert) => (
+                            <li key={alert.id}>
+                                <Link to={alert.href}>
+                                    <Icon name={alert.tone === 'bad' ? 'ticket' : 'alert'} />
+                                    <span>
+                                        <strong>{alert.title}</strong>
+                                        <small>{alert.detail}</small>
+                                    </span>
+                                    <em className={`sev sev-${alert.tone}`}>{alert.tone === 'bad' ? 'High' : 'Medium'}</em>
+                                </Link>
+                            </li>
+                        ))}
+                        {!alerts.length && <li>Nothing is ringing. The week is clear.</li>}
+                    </ul>
+                </section>
+            </div>
+            <section className="card">
+                <IconKicker name="bot">Recent activity</IconKicker>
+                <div className="activity-row">
+                    {state.activity.slice(0, 4).map((event) => (
+                        <article key={event.id}>
+                            <Icon name={event.source === 'field-sync' ? 'field' : event.source === 'closeout-bot' ? 'closeout' : event.source === 'roster-bot' ? 'bot' : 'check'} />
+                            <strong>{event.message}</strong>
+                            <small>{event.source} · {prettyWhen(event.at)}</small>
+                        </article>
+                    ))}
+                    {!state.activity.length && <p className="muted">The log is empty until a bot or the office writes to it.</p>}
+                </div>
+            </section>
             <div className="pair-grid">
                 {[pair.primary, pair.partner].filter((person, index, list) => person && list.findIndex((item) => item?.id === person.id) === index).map((person) => person && (
                     <article key={person.id} className="card pair-card">
-                        <p className="kicker">{pair.holderId === person.id ? 'On this phone' : 'The other one'}</p>
-                        <h2>{person.name}</h2>
+                        <div className="person-id">
+                            <Avatar person={person} />
+                            <div>
+                                <IconKicker name="field">{pair.holderId === person.id ? 'On this phone' : 'The other one'}</IconKicker>
+                                <h2>{person.name}</h2>
+                            </div>
+                        </div>
                         <ul className="feed">
                             {todays.filter((booking) => booking.slots.some((slot) => slot.personId === person.id)).map((booking) => (
                                 <li key={booking.id}>
@@ -49,7 +136,7 @@ export function Dashboard() {
                 ))}
             </div>
             <section className="card grok-card">
-                <p className="kicker">Grok</p>
+                <IconKicker name="xai">Grok</IconKicker>
                 <h2>Ask before you roll</h2>
                 <p>Grok reads today's jobs, tickets and the rules the board already checked.</p>
                 <button
@@ -60,54 +147,15 @@ export function Dashboard() {
                     Morning brief
                 </button>
             </section>
-            <div className="kpi-grid">
-                <Link to="/app/board" className="kpi"><strong>{todays.length}</strong><span>Jobs today</span></Link>
-                <Link to="/app/board" className="kpi"><strong>{rostered}</strong><span>People rostered</span></Link>
-                <Link to="/app/board" className="kpi"><strong>{openSlots}</strong><span>Open slots</span></Link>
-                <Link to="/app/closeout" className="kpi"><strong>{toApprove}</strong><span>Dockets to approve</span></Link>
-            </div>
             <div className="split">
                 <section className="card">
-                    <p className="kicker">Alerts</p>
-                    <h2>Expiry, fatigue, gaps</h2>
-                    <ul className="feed">
-                        {alerts.map((alert) => (
-                            <li key={alert.id}>
-                                <Link to={alert.href}>
-                                    <em className={`dot dot-${alert.tone}`} />
-                                    <span>
-                                        <strong>{alert.title}</strong>
-                                        <small>{alert.detail}</small>
-                                    </span>
-                                </Link>
-                            </li>
-                        ))}
-                        {!alerts.length && <li>Nothing is ringing. The week is clear.</li>}
-                    </ul>
-                </section>
-                <section className="card">
-                    <p className="kicker">Activity</p>
-                    <h2>Bots and the office</h2>
-                    <ul className="feed">
-                        {state.activity.slice(0, 8).map((event) => (
-                            <li key={event.id}>
-                                <span>
-                                    <strong>{event.message}</strong>
-                                    <small>{event.source} · {prettyWhen(event.at)}</small>
-                                </span>
-                            </li>
-                        ))}
-                    </ul>
-                </section>
-            </div>
-            <div className="split">
-                <section className="card">
-                    <p className="kicker">Hours this week</p>
+                    <IconKicker name="fatigue">Hours this week</IconKicker>
                     <h2>Who is carrying the load</h2>
                     <ul className="feed">
                         {heavy.map(({ person, hours }) => (
                             <li key={person.id}>
                                 <Link to={`/app/people/${person.id}`}>
+                                    <Avatar person={person} size="sm" />
                                     <span>
                                         <strong>{person.name}</strong>
                                         <small>{round1(hours)}h rostered in 7 days · limit {state.settings.maxWeekHours}h</small>
@@ -118,7 +166,7 @@ export function Dashboard() {
                     </ul>
                 </section>
                 <section className="card">
-                    <p className="kicker">Record room</p>
+                    <IconKicker name="cloud">Record room</IconKicker>
                     <h2>What the database is holding</h2>
                     <ul className="check-list">
                         <li>{state.people.length} people</li>
@@ -153,4 +201,43 @@ function greeting() {
     if (hour < 12) return 'Morning'
     if (hour < 17) return 'Afternoon'
     return 'Evening'
+}
+
+function delta(now: number, then: number) {
+    const diff = now - then
+    if (diff === 0) return 'Same as yesterday'
+    return `${diff > 0 ? 'Up' : 'Down'} ${Math.abs(diff)} vs yesterday`
+}
+
+function countExpiring(people: { skills: { expires: string }[] }[], day: string, warningDays: number) {
+    const horizon = addDays(day, warningDays)
+    return people.reduce((sum, person) => sum + person.skills.filter((skill) => skill.expires <= horizon).length, 0)
+}
+
+function donut(filled: number, open: number) {
+    const total = Math.max(1, filled + open)
+    const a = (filled / total) * 100
+    return `conic-gradient(#1f9d55 0 ${a}%, #3b6cff ${a}% 100%)`
+}
+
+function Spark({ series }: { series: number[] }) {
+    const max = Math.max(1, ...series)
+    const points = series.map((value, index) => `${(index / Math.max(1, series.length - 1)) * 100},${28 - (value / max) * 24}`).join(' ')
+    return (
+        <svg className="spark" viewBox="0 0 100 32" aria-hidden="true">
+            <polyline points={points} />
+        </svg>
+    )
+}
+
+function Kpi({ icon, label, value, note, href, series, tone = 'ok' }: { icon: 'people' | 'board' | 'ticket' | 'dockets'; label: string; value: number; note: string; href: string; series: number[]; tone?: 'ok' | 'bad' }) {
+    return (
+        <Link to={href} className={cx('kpi', 'overview-kpi', tone === 'bad' && 'kpi-bad')}>
+            <Icon name={icon} />
+            <span>{label}</span>
+            <strong>{value}</strong>
+            <small>{note}</small>
+            <Spark series={series} />
+        </Link>
+    )
 }

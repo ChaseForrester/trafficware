@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { IconKicker } from '../components/Icons.tsx'
 import { useTitle } from '../components/useTitle.ts'
 import { signIn } from '../lib/auth.ts'
 import { AU_STATES } from '../lib/conduct.ts'
@@ -44,7 +45,7 @@ export function StartCompany() {
 
     return (
         <main className="wrap page enter-page">
-            <p className="kicker">Super Admin</p>
+            <IconKicker name="office">Super Admin</IconKicker>
             <h1>Open the office for your company.</h1>
             <p className="lede">You get the desktop board, people, rates, close-out and the docket pack. Sign in with the Super Admin account.</p>
             <form className="card form" onSubmit={onSubmit}>
@@ -98,7 +99,7 @@ export function JoinCompany() {
 
     return (
         <main className="wrap page enter-page">
-            <p className="kicker">Field</p>
+            <IconKicker name="field">Field</IconKicker>
             <h1>Join the crew.</h1>
             <p className="lede">You see your own jobs, tickets and dockets. Pay rates, the booking board and invoices stay in the office. Sign in with the client account.</p>
             <form className="card form" onSubmit={onSubmit}>

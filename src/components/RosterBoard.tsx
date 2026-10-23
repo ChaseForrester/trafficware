@@ -1,8 +1,10 @@
 import { useMemo, useState } from 'react'
 import type { DragEvent } from 'react'
-import { useGrok } from './GrokDock.tsx'
 import { rosterPlan } from '../lib/bots.ts'
-import { addDays, cx, initials, prettyDate, prettyLong, round1, startOfWeek } from '../lib/format.ts'
+import { addDays, cx, prettyDate, prettyLong, round1, startOfWeek } from '../lib/format.ts'
+import { Avatar } from './Avatar.tsx'
+import { useGrok } from './GrokDock.tsx'
+import { IconKicker } from './Icons.tsx'
 import { findClient, findPerson, slotIssues, statusFor, vehicleIssues, weekHours } from '../lib/rules.ts'
 import { useStore } from '../lib/store.tsx'
 import type { Booking } from '../types.ts'
@@ -16,11 +18,16 @@ const STATUS_LABEL = {
     invoiced: 'Invoiced',
 } as const
 
-export function RosterBoard({ compact = false }: { compact?: boolean }) {
+export function RosterBoard({ compact = false, focusDate, onFocusDate }: { compact?: boolean; focusDate?: string; onFocusDate?: (iso: string) => void }) {
     const store = useStore()
     const grok = useGrok()
     const { state, today } = store
-    const [date, setDate] = useState(today)
+    const [ownDate, setOwnDate] = useState(today)
+    const date = focusDate ?? ownDate
+    function setDate(next: string) {
+        if (onFocusDate) onFocusDate(next)
+        else setOwnDate(next)
+    }
     const [depot, setDepot] = useState('All')
     const [over, setOver] = useState<string | null>(null)
     const [showBot, setShowBot] = useState(!compact)
@@ -42,7 +49,7 @@ export function RosterBoard({ compact = false }: { compact?: boolean }) {
         <section className={cx('board', compact && 'board-compact')}>
             <header className="board-bar">
                 <div>
-                    <p className="kicker">Live booking board</p>
+                    <IconKicker name="board">Live booking board</IconKicker>
                     <h2>{prettyLong(date)}</h2>
                 </div>
                 <div className="board-actions">
@@ -88,7 +95,7 @@ export function RosterBoard({ compact = false }: { compact?: boolean }) {
             {showBot && (
                 <div className="bot-panel">
                     <div>
-                        <p className="kicker">Roster bot</p>
+                        <IconKicker name="bot">Roster bot</IconKicker>
                         <h3>{plan.suggestions.length ? `${plan.suggestions.length} people fit the open slots` : 'No clean fill available'}</h3>
                         <p className="muted">Suggestions skip anyone who would break a ticket, rest, fatigue or clash rule. Existing problems stay until you move them.</p>
                     </div>
@@ -142,9 +149,7 @@ export function RosterBoard({ compact = false }: { compact?: boolean }) {
                                     event.dataTransfer.effectAllowed = 'copy'
                                 }}
                             >
-                                <span className="avatar" style={{ background: person.color }}>
-                                    {initials(person.name)}
-                                </span>
+                                <Avatar person={person} />
                                 <span>
                                     <strong>{person.name}</strong>
                                     <small>
@@ -236,9 +241,7 @@ function JobCard({
                             </div>
                             {person ? (
                                 <p className="slot-person">
-                                    <span className="avatar sm" style={{ background: person.color }}>
-                                        {initials(person.name)}
-                                    </span>
+                                    <Avatar person={person} size="sm" />
                                     {person.name}
                                     <em>{slot.response}</em>
                                 </p>

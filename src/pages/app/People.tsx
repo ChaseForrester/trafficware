@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { addDays, cx, initials, prettyDate, round1, startOfWeek } from '../../lib/format.ts'
+import { Avatar } from '../../components/Avatar.tsx'
+import { IconKicker } from '../../components/Icons.tsx'
+import { addDays, cx, prettyDate, round1, startOfWeek } from '../../lib/format.ts'
 import { weekHours } from '../../lib/rules.ts'
 import { useStore } from '../../lib/store.tsx'
 import { SKILL_NAMES, type EmploymentStatus } from '../../types.ts'
@@ -24,7 +26,7 @@ export function People() {
         <div className="page-pad">
             <header className="page-title">
                 <div>
-                    <p className="kicker">Super admin</p>
+                    <IconKicker name="people">Super admin</IconKicker>
                     <h1>People, tickets and rates</h1>
                 </div>
                 <button type="button" className="btn btn-primary btn-small" onClick={() => setAdding((value) => !value)}>
@@ -41,22 +43,45 @@ export function People() {
                 ))}
             </div>
             <div className="person-layout">
-                <div className="person-list">
-                    {people.map((person) => (
-                        <Link key={person.id} to={`/app/people/${person.id}`} className={cx('person-card', selected?.id === person.id && 'on')}>
-                            <span className="avatar" style={{ background: person.color }}>{initials(person.name)}</span>
-                            <span>
-                                <strong>{person.name}</strong>
-                                <small>{person.title} · {person.depot} · {person.status}</small>
-                            </span>
-                        </Link>
-                    ))}
+                <div className="people-table">
+                    <div className="people-row people-head">
+                        <span>Name</span>
+                        <span>Status</span>
+                        <span>Role</span>
+                        <span>Ticket</span>
+                    </div>
+                    {people.map((person) => {
+                        const ticket = [...person.skills].sort((a, b) => a.expires.localeCompare(b.expires))[0]
+                        const ticketTone = !ticket ? 'bad' : ticket.expires < today ? 'bad' : ticket.expires <= addDays(today, state.settings.expiryWarningDays) ? 'warn' : 'ok'
+                        return (
+                            <Link key={person.id} to={`/app/people/${person.id}`} className={cx('people-row', selected?.id === person.id && 'on')}>
+                                <span className="person-id">
+                                    <Avatar person={person} size="sm" />
+                                    <span>
+                                        <strong>{person.name}</strong>
+                                        <small>{person.depot}</small>
+                                    </span>
+                                </span>
+                                <span><em className={`status-pill status-${person.status}`}>{person.status}</em></span>
+                                <span>{person.title}</span>
+                                <span className={`ticket-chip ticket-${ticketTone}`}>{ticket ? `${ticket.name} · ${prettyDate(ticket.expires)}` : 'No ticket'}</span>
+                            </Link>
+                        )
+                    })}
                     {!people.length && <p className="empty">No one matches.</p>}
                 </div>
                 {selected && <PersonDetail personId={selected.id} today={today} />}
             </div>
         </div>
     )
+}
+
+function compliance(person: { skills: { expires: string }[]; onboarding: { done: boolean }[] }, today: string) {
+    const current = person.skills.filter((skill) => skill.expires >= today).length
+    const done = person.onboarding.filter((item) => item.done).length
+    const total = person.skills.length + person.onboarding.length
+    if (!total) return 0
+    return Math.round(((current + done) / total) * 100)
 }
 
 function AddPerson({ onDone }: { onDone: () => void }) {
@@ -116,13 +141,24 @@ function PersonDetail({ personId, today }: { personId: string; today: string }) 
     return (
         <article className="card person-detail">
             <header className="job-head">
-                <div>
-                    <p className="kicker">{person.depot} depot</p>
-                    <h2>{person.name}</h2>
-                    <p className="muted">{person.title} · {person.phone} · {person.email}</p>
+                <div className="person-id">
+                    <Avatar person={person} size="lg" />
+                    <div>
+                        <p className="kicker">{person.depot} depot</p>
+                        <h2>{person.name}</h2>
+                        <p className="muted">{person.title} · {person.phone} · {person.email}</p>
+                    </div>
                 </div>
-                <p className="hours-pill">{hours}h / {store.state.settings.maxWeekHours}h</p>
+                <p className="hours-pill">{compliance(person, today)}%</p>
             </header>
+            <p className="muted">{hours}h rostered of {store.state.settings.maxWeekHours}h this week. The score is current tickets plus finished onboarding checks.</p>
+            <div className="ticket-row">
+                {person.skills.map((skill) => {
+                    const tone = skill.expires < today ? 'bad' : skill.expires <= horizon ? 'warn' : 'ok'
+                    return <span key={skill.id} className={`ticket-chip ticket-${tone}`}>{skill.name}<small>{prettyDate(skill.expires)}</small></span>
+                })}
+                {!person.skills.length && <span className="ticket-chip ticket-bad">No ticket on file</span>}
+            </div>
             <label className="field">
                 Employment status
                 <select
@@ -142,7 +178,7 @@ function PersonDetail({ personId, today }: { personId: string; today: string }) 
                 </select>
             </label>
             <Rates key={person.id} personId={person.id} ordinary={person.ordinaryRate} night={person.nightRate} weekend={person.weekendRate} onSave={saveRates} />
-            <h3>Tickets and documents</h3>
+            <h3>Documents</h3>
             <ul className="feed">
                 {person.skills.map((skill) => (
                     <li key={skill.id}>

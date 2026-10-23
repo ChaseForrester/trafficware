@@ -7,6 +7,7 @@ import { useStore } from '../../lib/store.tsx'
 import { disconnectXero, pushXero, xeroStatus } from '../../lib/yardCloud.ts'
 import type { XeroInvoice, XeroStatus } from '../../lib/yardCloud.ts'
 import type { IntegrationId } from '../../types.ts'
+import { IconKicker } from '../../components/Icons.tsx'
 import { IntegrationMark } from '../../components/Marks.tsx'
 
 export function Integrations() {
@@ -94,12 +95,12 @@ export function Integrations() {
         <div className="page-pad">
             <header className="page-title">
                 <div>
-                    <p className="kicker">Integrations and APIs</p>
+                    <IconKicker name="integrations">Integrations and APIs</IconKicker>
                     <h1>Hand the work to the next system</h1>
                 </div>
             </header>
             <section className="card setup-card">
-                <p className="kicker">Shared yard</p>
+                <IconKicker name="cloud">Shared yard</IconKicker>
                 <h2>Firestore holds one yard for both of you</h2>
                 <p>{store.cloudNote}</p>
                 <p className="muted">The project is trafficware-yard, in Sydney, on the Blaze plan. Email sign-in is on for the Super Admin and the client. The server key still reads and writes the yard, and this access code is the lock. The same code unlocks Grok.</p>

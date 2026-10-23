@@ -1,3 +1,4 @@
+import { IconKicker } from '../../components/Icons.tsx'
 import { prettyWhen } from '../../lib/format.ts'
 import { useStore } from '../../lib/store.tsx'
 
@@ -9,7 +10,7 @@ export function Fleet() {
         <div className="page-pad">
             <header className="page-title">
                 <div>
-                    <p className="kicker">Fleet and equipment</p>
+                    <IconKicker name="fleet">Fleet and equipment</IconKicker>
                     <h1>Trucks, rego and gear</h1>
                 </div>
             </header>
@@ -17,7 +18,7 @@ export function Fleet() {
             <div className="grid-2">
                 {state.vehicles.map((vehicle) => (
                     <article key={vehicle.id} className="card">
-                        <p className="kicker">{vehicle.kind} · {vehicle.depot}</p>
+                        <IconKicker name="fleet">{vehicle.kind} · {vehicle.depot}</IconKicker>
                         <h2>{vehicle.name}</h2>
                         <p className="muted">Rego {vehicle.rego} · expires {vehicle.regoExpires}</p>
                         <p className="muted">Service due {vehicle.nextService}</p>
@@ -39,7 +40,7 @@ export function Fleet() {
                 ))}
             </div>
             <section className="card page-gap">
-                <p className="kicker">Equipment</p>
+                <IconKicker name="gps">Equipment</IconKicker>
                 <h2>Called for on today&apos;s jobs</h2>
                 <div className="table">
                     {state.equipment.map((item) => {

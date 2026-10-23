@@ -2,11 +2,13 @@ import { useEffect, useState } from 'react'
 import type { DragEvent, FormEvent } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { buildAlerts, closeoutReview, invoiceDrafts, payrollRows, rosterPlan } from '../lib/bots.ts'
-import { addDays, cx, downloadCsv, initials, money, prettyDate, round1, shiftHours } from '../lib/format.ts'
+import { addDays, cx, downloadCsv, money, prettyDate, round1, shiftHours } from '../lib/format.ts'
 import { findPerson, projectedWeekHours, validateAssignment } from '../lib/rules.ts'
 import { useStore } from '../lib/store.tsx'
 import type { AppState, Booking, Docket, Person, Slot } from '../types.ts'
+import { Avatar } from './Avatar.tsx'
 import { BotMark } from './BotMark.tsx'
+import { IconKicker } from './Icons.tsx'
 import { PLAYS, isPlayId } from './botPlays.ts'
 import type { Play } from './botPlays.ts'
 
@@ -347,7 +349,7 @@ export function Interactions() {
             <div className="ix-wrap">
                 <div className="ix-intro">
                     <div>
-                        <p className="kicker">Six automations</p>
+                        <IconKicker name="bot">Six automations</IconKicker>
                         <h2>Watch the bot do the job.</h2>
                         <p className="lede">
                             Each one is a bot from the yard diagram, reading and writing this sample yard.
@@ -439,7 +441,7 @@ function AlertsPlay({ report }: { report: Report }) {
                         aria-pressed={personId === item.id}
                         onClick={() => check(item.id)}
                     >
-                        <span className="avatar" style={{ background: item.color }}>{initials(item.name)}</span>
+                        <Avatar person={item} />
                         <span>
                             <strong>{item.name}</strong>
                             <em>{item.status === 'active' ? item.title : item.status}</em>
@@ -533,7 +535,7 @@ function BoardPlay({ report }: { report: Report }) {
                         onClick={() => setPersonId(person.id)}
                         onDragStart={(event) => dragStart(event, person.id)}
                     >
-                        <span className="avatar" style={{ background: person.color }}>{initials(person.name)}</span>
+                        <Avatar person={person} />
                         <span>
                             <strong>{person.name}</strong>
                             <em>{person.title}</em>
@@ -628,7 +630,7 @@ function PushPlay({ report }: { report: Report }) {
                 <div className="ix-offers">
                     {offers.slice(0, 3).map((offer) => (
                         <article key={offer.slot.id}>
-                            <p className="kicker">{offer.person.name}</p>
+                            <p className="person-id"><Avatar person={offer.person} size="sm" /><span className="kicker">{offer.person.name}</span></p>
                             <strong>{offer.booking.title}</strong>
                             <p>{offer.slot.role} · {offer.booking.start}–{offer.booking.end}</p>
                             <div className="ix-actions">

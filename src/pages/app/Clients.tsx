@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
+import { IconKicker } from '../../components/Icons.tsx'
 import { money, prettyDate } from '../../lib/format.ts'
 import { statusFor } from '../../lib/rules.ts'
 import { useStore } from '../../lib/store.tsx'
@@ -22,7 +23,7 @@ export function Clients() {
         <div className="page-pad">
             <header className="page-title">
                 <div>
-                    <p className="kicker">Clients</p>
+                    <IconKicker name="clients">Clients</IconKicker>
                     <h1>Who the jobs are for</h1>
                 </div>
                 <button type="button" className="btn btn-primary btn-small" onClick={() => setOpen((value) => !value)}>
@@ -49,7 +50,7 @@ export function Clients() {
                     const invoiced = state.invoices.filter((invoice) => invoice.clientId === client.id)
                     return (
                         <article key={client.id} className="card">
-                            <p className="kicker">{money(client.billingRate)} / hour charge-out</p>
+                            <IconKicker name="clients">{money(client.billingRate)} / hour charge-out</IconKicker>
                             <h2>{client.name}</h2>
                             <p className="muted">{client.contact} · {client.email} · {client.phone}</p>
                             <ul className="feed">
