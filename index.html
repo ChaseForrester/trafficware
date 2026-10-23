@@ -3,20 +3,82 @@
 
 <head>
   <meta charset="UTF-8" />
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" href="/favicon-32.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Trafficware · Roster, dockets and invoices for traffic companies</title>
   <meta name="description"
-    content="Trafficware is the booking board, people record and field app for traffic companies." />
-  <meta name="theme-color" content="#10141c" />
+    content="Trafficware rosters Australian traffic controllers. It checks tickets, fatigue and clashes, takes a phone docket, and prepares the Xero invoice." />
+  <meta name="keywords"
+    content="traffic control roster, traffic controller docket, Australian traffic management, fatigue, clash, TCAWS, Xero invoice, booking board, near miss, white card" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://trafficware.vercel.app/" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Trafficware" />
+  <meta property="og:title" content="Trafficware · Put the right crew on the right job" />
+  <meta property="og:description"
+    content="Roster, phone dockets and Xero invoices for Australian traffic companies. The office and the crew are different pages." />
+  <meta property="og:url" content="https://trafficware.vercel.app/" />
+  <meta property="og:image" content="https://trafficware.vercel.app/og.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt"
+    content="Trafficware logo. Put the right crew on the right job. Roster, phone dockets and Xero invoices for Australian traffic companies." />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Trafficware · Put the right crew on the right job" />
+  <meta name="twitter:description"
+    content="Roster, phone dockets and Xero invoices for Australian traffic companies." />
+  <meta name="twitter:image" content="https://trafficware.vercel.app/og.jpg" />
+  <meta name="theme-color" content="#f34f27" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Trafficware" />
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="/brand/apple-touch-icon.png" />
+  <script>
+    try {
+      var saved = localStorage.getItem('trafficware.theme')
+      var theme = saved === 'day' || saved === 'night'
+        ? saved
+        : (matchMedia('(prefers-color-scheme: dark)').matches ? 'night' : 'day')
+      document.documentElement.dataset.theme = theme
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', theme === 'night' ? '#12151b' : '#f34f27')
+    } catch (e) { }
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
     href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Caveat:wght@600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;500;600;700&display=swap"
     rel="stylesheet" />
-  <title>Trafficware</title>
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Trafficware",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "Web",
+      "url": "https://trafficware.vercel.app/",
+      "image": "https://trafficware.vercel.app/og.jpg",
+      "description": "Trafficware is the booking board, phone docket and invoice workspace for Australian traffic companies. The roster bot checks tickets, fatigue and clashes. The field sync bot puts one shift on the phone. The close-out bot prepares a Xero draft.",
+      "areaServed": "AU",
+      "featureList": [
+        "Booking board with ticket, fatigue, rest and clash checks",
+        "Field offers, offline dockets and near misses",
+        "Printable dockets naming the ACCC and each state instrument",
+        "Xero draft invoices and a payroll file",
+        "Separate office and crew pages"
+      ]
+    }
+  </script>
 </head>
 
 <body>
+  <noscript>
+    <h1>Trafficware</h1>
+    <p>Trafficware rosters Australian traffic controllers. The office page runs the booking board, rates and invoices.
+      The crew page is one person’s offers, docket and tickets. Open <a
+        href="https://trafficware.vercel.app/llms.txt">llms.txt</a> for the page map.</p>
+  </noscript>
   <div id="root"></div>
   <script type="module" src="/src/main.tsx"></script>
 </body>

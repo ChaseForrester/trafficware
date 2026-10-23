@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import type { DragEvent } from 'react'
+import { useGrok } from './GrokDock.tsx'
 import { rosterPlan } from '../lib/bots.ts'
 import { addDays, cx, initials, prettyDate, prettyLong, round1, startOfWeek } from '../lib/format.ts'
 import { findClient, findPerson, slotIssues, statusFor, vehicleIssues, weekHours } from '../lib/rules.ts'
@@ -17,6 +18,7 @@ const STATUS_LABEL = {
 
 export function RosterBoard({ compact = false }: { compact?: boolean }) {
     const store = useStore()
+    const grok = useGrok()
     const { state, today } = store
     const [date, setDate] = useState(today)
     const [depot, setDepot] = useState('All')
@@ -55,6 +57,13 @@ export function RosterBoard({ compact = false }: { compact?: boolean }) {
                     </label>
                     <button type="button" className="btn btn-amber btn-small" onClick={() => setShowBot((open) => !open)}>
                         Roster bot
+                    </button>
+                    <button
+                        type="button"
+                        className="btn btn-primary btn-small"
+                        onClick={() => grok.openWith(`Who should fill the open slots on ${date}? Use only the suggestions in the snapshot for today, and say which slots are still blocked. Depot filter is ${depot}.`)}
+                    >
+                        Ask Grok
                     </button>
                 </div>
             </header>

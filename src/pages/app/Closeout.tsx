@@ -1,4 +1,6 @@
 import { useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { useGrok } from '../../components/GrokDock.tsx'
 import { closeoutReview, invoiceDrafts, payrollRows } from '../../lib/bots.ts'
 import { downloadCsv, money, prettyDate, round1 } from '../../lib/format.ts'
 import { findPerson, statusFor } from '../../lib/rules.ts'
@@ -6,6 +8,7 @@ import { useStore } from '../../lib/store.tsx'
 
 export function Closeout() {
     const store = useStore()
+    const grok = useGrok()
     const { state, today } = store
     const [date, setDate] = useState(today)
     const [reasons, setReasons] = useState<Record<string, string>>({})
@@ -63,6 +66,14 @@ export function Closeout() {
                     <button type="button" className="btn btn-amber btn-small" onClick={() => store.approveClean(date)}>
                         Approve clean dockets
                     </button>
+                    <Link to={`/dockets?date=${date}`} className="btn btn-ghost btn-small">Print the day pack</Link>
+                    <button
+                        type="button"
+                        className="btn btn-primary btn-small"
+                        onClick={() => grok.openWith(`Write a short close-out note for ${date}. Name blockers first, then what is ready to approve. Use only the yard snapshot.`)}
+                    >
+                        Ask Grok to write it
+                    </button>
                 </div>
             </section>
             <div className="grid-2 page-gap">
@@ -85,6 +96,7 @@ export function Closeout() {
                                         {docket.nearMiss && <p className="issue warn">Near miss: {docket.nearMiss}{docket.photoName ? ` · ${docket.photoName}` : ''}</p>}
                                         {docket.queryNote && <p className="issue bad">Query: {docket.queryNote}</p>}
                                         <p className="muted">Signed {docket.signedBy || '—'}</p>
+                                        <Link to={`/docket/${docket.id}`}>Print this docket</Link>
                                         {docket.status !== 'approved' && (
                                             <div className="hero-actions">
                                                 <button type="button" className="btn btn-primary btn-small" onClick={() => store.approveDocket(docket.id)}>Approve</button>

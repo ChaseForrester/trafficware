@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Architecture } from '../components/Architecture.tsx'
+import { BotMark } from '../components/BotMark.tsx'
 import { useTitle } from '../components/useTitle.ts'
 
 export function Platform() {
@@ -17,19 +18,28 @@ export function Platform() {
             <Architecture />
             <div className="grid-3 page-gap">
                 <article className="card">
-                    <p className="kicker">Roster bot</p>
+                    <div className="story-bot">
+                        <BotMark bot="roster" size={48} />
+                        <p className="kicker">Roster bot</p>
+                    </div>
                     <h2>Suggests, then waits.</h2>
                     <p>It will not place someone who fails a rule. You apply the list, and the crew still has to accept on the phone.</p>
                     <Link to="/app/board">Run it on the board</Link>
                 </article>
                 <article className="card">
-                    <p className="kicker">Close-out bot</p>
+                    <div className="story-bot">
+                        <BotMark bot="closeout" size={48} />
+                        <p className="kicker">Close-out bot</p>
+                    </div>
                     <h2>Reads the docket against the roster.</h2>
                     <p>Missing signatures, extra hours and near misses stay in the queue. Clean dockets can be approved together.</p>
                     <Link to="/app/closeout">Open close-out</Link>
                 </article>
                 <article className="card">
-                    <p className="kicker">Field sync bot</p>
+                    <div className="story-bot">
+                        <BotMark bot="field" size={48} />
+                        <p className="kicker">Field sync bot</p>
+                    </div>
                     <h2>The outbox is the queue.</h2>
                     <p>Turn the phone offline, submit a docket, then come back. Nothing reaches payroll until the sync runs.</p>
                     <Link to="/field">Open the field app</Link>

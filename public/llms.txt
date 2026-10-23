@@ -1,0 +1,39 @@
+# Trafficware
+
+> Trafficware is the roster, phone docket and invoice workspace for Australian traffic companies. The office and the person on the tools use different pages.
+
+Trafficware is a web app for a traffic-control yard. A Super Admin runs the company from the office. A traffic controller joins that company and sees only their own shift. The sample yard is Victorian: West, Central and Geelong, including a City of Maribyrnong job.
+
+## What it does
+
+- Booking board. A name is checked for the right ticket, week hours, rest after a night, and a clash with another job before an offer goes out.
+- Roster bot. An expired ticket, an amber week, or a second job at the same time stays off the phone.
+- Field sync bot. One offer on the phone. Accept or decline. A docket with times, a photo and a near miss queues when the site has no signal.
+- Close-out bot. Approved dockets become pay lines (ordinary, night, weekend) and a client invoice. Pay is calculated in Trafficware.
+- Xero. A connected organisation receives draft sales invoices in Australian dollars. A CSV copy still downloads.
+- Dockets. Printable sheets name the ACCC under the Australian Consumer Law and the instrument for the state the job was in. They are not copies of the manuals.
+- States named on the docket: NSW Transport for NSW / TCAWS, VIC Transport Victoria worksite code, QLD TMR, SA DIT, WA Main Roads, TAS State Growth, ACT Transport Canberra, NT Logistics and Infrastructure.
+
+## Pages
+
+- [Home](https://trafficware.vercel.app/): the fork between the business and the crew, plus the six-step guide.
+- [Office](https://trafficware.vercel.app/business): Super Admin story. Roster bot and close-out bot.
+- [Crew](https://trafficware.vercel.app/crew): one person. Field sync bot. No pay rates and no booking board.
+- [Start a company](https://trafficware.vercel.app/start): office signup on this device.
+- [Join a company](https://trafficware.vercel.app/join): crew signup on this device.
+- [Product](https://trafficware.vercel.app/product): board, people, fleet, field, close-out, integrations.
+- [Platform](https://trafficware.vercel.app/platform): how the same job record is read by every screen.
+- [Pricing](https://trafficware.vercel.app/pricing): demo figures, not a live checkout.
+- [Book a demo](https://trafficware.vercel.app/demo): leave a note on this device.
+- [Office app](https://trafficware.vercel.app/app): the working yard.
+- [Field phone](https://trafficware.vercel.app/field): one person's jobs.
+- [Print dockets](https://trafficware.vercel.app/dockets): the day pack.
+- [Integrations](https://trafficware.vercel.app/app/integrations): shared Firestore yard, Xero connect, payroll file, GPS, HR onboarding.
+
+## How the data is held
+
+The yard is saved in the browser. With the access code it also syncs to Firestore in the Firebase project trafficware-yard (Sydney, Blaze plan). Super Admin signs in at /start and the client signs in at /join. The server checks the Firebase token. A signed-in Super Admin can ask Grok to change the office board. A signed-in client can ask Grok to accept, decline, or sign only their own shift. The rules engine still blocks an illegal move. Rules deny public Firestore reads. Do not send the access code, account passwords, the Xero secret, or the Firebase key to a model.
+
+## Words people use
+
+traffic control software, traffic controller roster, traffic management docket, Australian traffic company, booking board, fatigue management, ticket expiry, near miss, Xero invoice, payroll export, field app offline docket.

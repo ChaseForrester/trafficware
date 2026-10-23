@@ -39,8 +39,10 @@ import {
     type NewPerson,
     type Result,
 } from './mutate.ts'
+import { loadPin, savePin } from './grok.ts'
 import { loadState, saveState } from './persistence.ts'
 import { seed } from './seed.ts'
+import { pullYard, pushYard } from './yardCloud.ts'
 
 type StoreValue = {
     state: AppState
@@ -77,6 +79,8 @@ type StoreValue = {
     addDepot: (name: string) => Result
     completeOnboarding: (personId: string, itemId: string) => Result
     bookDemo: (input: DemoInput) => Result
+    cloudNote: string
+    linkCloud: (pin: string) => Promise<string>
 }
 
 const StoreContext = createContext<StoreValue | null>(null)
@@ -84,13 +88,47 @@ const StoreContext = createContext<StoreValue | null>(null)
 export function StoreProvider({ children }: { children: ReactNode }) {
     const [state, setState] = useState<AppState>(() => loadState() ?? seed())
     const [notice, setNotice] = useState<Notice | null>(null)
+    const [cloudNote, setCloudNote] = useState('Checking the shared yard…')
     const stateRef = useRef(state)
+    const cloudOn = useRef(false)
     stateRef.current = state
     const today = todayIso()
 
     useEffect(() => {
         saveState(state)
+        if (!cloudOn.current) return
+        const pin = loadPin()
+        if (!pin) return
+        const timer = window.setTimeout(() => {
+            void pushYard(state, pin)
+        }, 600)
+        return () => window.clearTimeout(timer)
     }, [state])
+
+    useEffect(() => {
+        let cancel = false
+        void (async () => {
+            const result = await pullYard(loadPin())
+            if (cancel) return
+            if (result.mode === 'cloud') {
+                cloudOn.current = true
+                stateRef.current = result.state
+                setState(result.state)
+                setCloudNote('This yard is the Firestore copy shared by the access code.')
+                return
+            }
+            if (result.mode === 'empty' && loadPin()) {
+                cloudOn.current = true
+                await pushYard(stateRef.current, loadPin())
+                setCloudNote('This browser started the shared yard in Firestore.')
+                return
+            }
+            setCloudNote(result.detail)
+        })()
+        return () => {
+            cancel = true
+        }
+    }, [])
 
     const dismissNotice = useCallback(() => setNotice(null), [])
 
@@ -141,6 +179,26 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         addDepot: (name) => commit(addDepot(stateRef.current, name)),
         completeOnboarding: (personId, itemId) => commit(completeOnboarding(stateRef.current, personId, itemId)),
         bookDemo: (input) => commit(bookDemo(stateRef.current, input)),
+        cloudNote,
+        linkCloud: async (pin: string) => {
+            savePin(pin.trim())
+            const result = await pullYard(pin.trim())
+            if (result.mode === 'cloud') {
+                cloudOn.current = true
+                stateRef.current = result.state
+                setState(result.state)
+                setCloudNote('Shared yard loaded from Firestore.')
+                return 'Loaded the shared yard.'
+            }
+            if (result.mode === 'empty') {
+                cloudOn.current = true
+                await pushYard(stateRef.current, pin.trim())
+                setCloudNote('This browser is now the shared yard in Firestore.')
+                return 'Saved this yard to Firestore.'
+            }
+            setCloudNote(result.detail)
+            return result.detail
+        },
     }
 
     return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>

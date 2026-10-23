@@ -1,13 +1,19 @@
 import { Link } from 'react-router-dom'
 
-export function Logo({ light = false }: { light?: boolean }) {
+export function Logo({ to = '/', lockup = false }: { to?: string; lockup?: boolean }) {
+    if (lockup) {
+        return (
+            <Link to={to} className="brand brand-lockup" aria-label="Trafficware">
+                <span className="logo-plate">
+                    <img src="/brand/logo-lockup.png" alt="Trafficware" />
+                </span>
+            </Link>
+        )
+    }
+
     return (
-        <Link to="/" className={light ? 'brand brand-light' : 'brand'} aria-label="Trafficware home">
-            <svg viewBox="0 0 36 36" aria-hidden="true">
-                <rect width="36" height="36" rx="8" fill={light ? '#ffe14a' : '#10141c'} />
-                <path d="M18 6 29 28H7L18 6Z" fill={light ? '#10141c' : '#ffe14a'} />
-                <rect x="16.2" y="15" width="3.6" height="8" rx="0.6" fill={light ? '#ffe14a' : '#10141c'} />
-            </svg>
+        <Link to={to} className="brand" aria-label="Trafficware">
+            <img src="/brand/logo-mark.png" alt="" />
             <span>Trafficware</span>
         </Link>
     )

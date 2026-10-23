@@ -1,26 +1,28 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link } from 'react-router-dom'
-import { Logo } from '../components/Logo.tsx'
 import { useTitle } from '../components/useTitle.ts'
 import { cx, prettyDate, prettyWhen } from '../lib/format.ts'
+import { usePair } from '../lib/pair.tsx'
+import { useSession } from '../lib/session.tsx'
 import { findClient } from '../lib/rules.ts'
 import { useStore } from '../lib/store.tsx'
 
 export function FieldApp() {
     useTitle('Field · Trafficware')
     const store = useStore()
+    const pair = usePair()
+    const { session } = useSession()
     const { state, today } = store
-    const defaultId = useMemo(() => {
-        const pending = state.bookings
-            .filter((booking) => booking.date === today)
-            .flatMap((booking) => booking.slots)
-            .find((slot) => slot.response === 'pending' && slot.personId)
-        return pending?.personId ?? state.people.find((person) => person.status === 'active')?.id ?? state.people[0]?.id ?? ''
-    }, [state.bookings, state.people, today])
-    const [personId, setPersonId] = useState(defaultId)
+    const personId = session?.role === 'field' && session.personId ? session.personId : pair.holderId
+    const locked = session?.role === 'field' && session.personId === personId
     const [tab, setTab] = useState<'jobs' | 'docs' | 'safety'>('jobs')
     const [docketFor, setDocketFor] = useState<string | null>(null)
+    const [docketHolder, setDocketHolder] = useState(personId)
+    if (docketHolder !== personId) {
+        setDocketHolder(personId)
+        setDocketFor(null)
+    }
     const person = state.people.find((item) => item.id === personId) ?? state.people[0]
     const offers = state.bookings
         .flatMap((booking) => booking.slots.filter((slot) => slot.personId === person?.id).map((slot) => ({ booking, slot })))
@@ -33,88 +35,113 @@ export function FieldApp() {
 
     if (!person) return null
 
+    const operators = [pair.primary, pair.partner].filter((item, index, list) => item && list.findIndex((person) => person?.id === item.id) === index)
+
     return (
-        <div className="field-page">
-            <div className="phone">
-                <header className="phone-bar">
-                    <Logo light />
-                    <label className="field">
-                        Crew
-                        <select value={person.id} onChange={(event) => { setPersonId(event.target.value); setDocketFor(null) }}>
-                            {state.people.map((item) => (
-                                <option key={item.id} value={item.id}>{item.name}</option>
-                            ))}
-                        </select>
-                    </label>
-                </header>
-                <div className="phone-offline">
-                    <span>{state.offline ? 'Offline · work stays on this phone' : 'Online · dockets go straight to the office'}</span>
-                    <button type="button" className="btn btn-amber btn-small" onClick={() => store.setOffline(!state.offline)}>
-                        {state.offline ? 'Go online' : 'Go offline'}
+        <div className="page-pad field-app">
+            <header className="page-title">
+                <div>
+                    <p className="kicker">Field</p>
+                    <h1>{person.name.split(' ')[0]}'s jobs</h1>
+                </div>
+            </header>
+            {!locked && <div className="who who-block" role="group" aria-label="Who is holding the phone">
+                {operators.map((item) => item && (
+                    <button
+                        key={item.id}
+                        type="button"
+                        className={cx('who-btn', person.id === item.id && 'on')}
+                        aria-pressed={person.id === item.id}
+                        onClick={() => pair.setHolder(item.id)}
+                    >
+                        <span className="avatar sm" style={{ background: item.color }}>{item.name.split(' ').map((part) => part[0]).slice(0, 2).join('')}</span>
+                        <span>{item.name.split(' ')[0]}</span>
                     </button>
-                </div>
-                <div className="tabs">
-                    {(['jobs', 'docs', 'safety'] as const).map((item) => (
-                        <button key={item} type="button" className={cx('chip-btn', tab === item && 'on')} onClick={() => { setTab(item); setDocketFor(null) }}>
-                            {item === 'jobs' ? 'Jobs' : item === 'docs' ? 'Tickets' : 'Near miss'}
-                        </button>
-                    ))}
-                </div>
-                {tab === 'jobs' && !docketFor && (
-                    <div className="phone-body">
-                        {offers.map(({ booking, slot }) => {
-                            const docket = state.dockets.find((item) => item.bookingId === booking.id && item.personId === person.id && item.status !== 'queried')
-                                ?? state.outbox.find((item) => item.bookingId === booking.id && item.personId === person.id)
-                            const client = findClient(state, booking.clientId)
-                            return (
-                                <article key={slot.id} className="card">
-                                    <p className="kicker">{prettyDate(booking.date)} · {slot.role}</p>
-                                    <h2>{booking.title}</h2>
-                                    <p className="muted">{booking.start}–{booking.end}</p>
-                                    <p>{booking.site}</p>
-                                    <p className="muted">{client?.name}</p>
-                                    {booking.notes && <p>{booking.notes}</p>}
-                                    {slot.response === 'pending' && (
-                                        <div className="hero-actions">
-                                            <button type="button" className="btn btn-primary btn-small" onClick={() => store.respond(booking.id, slot.id, 'accepted')}>Accept</button>
-                                            <button type="button" className="btn btn-ghost btn-small" onClick={() => store.respond(booking.id, slot.id, 'declined')}>Decline</button>
-                                        </div>
-                                    )}
-                                    {slot.response === 'accepted' && !docket && (
-                                        <button type="button" className="btn btn-amber btn-small" onClick={() => { setDocketFor(booking.id) }}>
-                                            Open docket
-                                        </button>
-                                    )}
-                                    {docket && <p className="tag">{docket.status === 'queued' ? 'Queued offline' : docket.status}</p>}
-                                </article>
-                            )
-                        })}
-                        {!offers.length && <p className="empty">No offers for {person.name}. Run the roster bot, then come back.</p>}
-                    </div>
-                )}
-                {tab === 'jobs' && docketFor && (
-                    <DocketForm bookingId={docketFor} personId={person.id} personName={person.name} onClose={() => setDocketFor(null)} />
-                )}
-                {tab === 'docs' && (
-                    <div className="phone-body">
-                        <p className="muted">These tickets are stored with the person, so they stay readable when the phone is offline.</p>
-                        {person.skills.map((skill) => (
-                            <article key={skill.id} className="card">
-                                <p className="kicker">On this phone</p>
-                                <h2>{skill.name}</h2>
-                                <p>Expires {skill.expires}</p>
-                                <p className="muted">{skill.document}</p>
-                            </article>
+                ))}
+            </div>}
+            {!locked && (
+                <label className="field">
+                    Someone else on the crew
+                    <select value={person.id} onChange={(event) => pair.setHolder(event.target.value)}>
+                        {state.people.map((item) => (
+                            <option key={item.id} value={item.id}>{item.name}</option>
                         ))}
-                        {!person.skills.length && <p className="empty">No tickets on file yet.</p>}
-                    </div>
-                )}
-                {tab === 'safety' && <SafetyForm personId={person.id} offers={offers.map((offer) => offer.booking.id)} />}
+                    </select>
+                </label>
+            )}
+            <p><Link to="/dockets">Print my dockets</Link></p>
+            <div className="phone-offline">
+                <span>{state.offline ? 'Offline · work stays on this phone' : 'Online · dockets go straight to the office'}</span>
+                <button type="button" className="btn btn-amber btn-small" onClick={() => store.setOffline(!state.offline)}>
+                    {state.offline ? 'Go online' : 'Go offline'}
+                </button>
             </div>
-            <aside className="sync-console">
-                <p className="kicker">Field sync bot</p>
-                <h2>Outbox</h2>
-                <p className="muted">Dockets and near misses submitted offline wait here until you are back online.</p>
+            <div className="tabs">
+                {(['jobs', 'docs', 'safety'] as const).map((item) => (
+                    <button key={item} type="button" className={cx('chip-btn', tab === item && 'on')} onClick={() => { setTab(item); setDocketFor(null) }}>
+                        {item === 'jobs' ? 'Jobs' : item === 'docs' ? 'Tickets' : 'Near miss'}
+                    </button>
+                ))}
+            </div>
+            {tab === 'jobs' && !docketFor && (
+                <div className="phone-body">
+                    {offers.map(({ booking, slot }) => {
+                        const docket = state.dockets.find((item) => item.bookingId === booking.id && item.personId === person.id && item.status !== 'queried')
+                            ?? state.outbox.find((item) => item.bookingId === booking.id && item.personId === person.id)
+                        const client = findClient(state, booking.clientId)
+                        return (
+                            <article key={slot.id} className="card">
+                                <p className="kicker">{prettyDate(booking.date)} · {slot.role}</p>
+                                <h2>{booking.title}</h2>
+                                <p className="muted">{booking.start}–{booking.end}</p>
+                                <p>{booking.site}</p>
+                                <p className="muted">{client?.name}</p>
+                                {booking.notes && <p>{booking.notes}</p>}
+                                {slot.response === 'pending' && (
+                                    <div className="hero-actions">
+                                        <button type="button" className="btn btn-primary btn-small" onClick={() => store.respond(booking.id, slot.id, 'accepted')}>Accept</button>
+                                        <button type="button" className="btn btn-ghost btn-small" onClick={() => store.respond(booking.id, slot.id, 'declined')}>Decline</button>
+                                    </div>
+                                )}
+                                {slot.response === 'accepted' && !docket && (
+                                    <button type="button" className="btn btn-amber btn-small" onClick={() => { setDocketFor(booking.id) }}>
+                                        Open docket
+                                    </button>
+                                )}
+                                {docket && (
+                                    <p className="tag">
+                                        {docket.status === 'queued' ? 'Queued offline' : docket.status}
+                                        {' · '}
+                                        <Link to={`/docket/${docket.id}`}>Print</Link>
+                                    </p>
+                                )}
+                            </article>
+                        )
+                    })}
+                    {!offers.length && <p className="empty">No offers for {person.name}. Run the roster bot, then come back.</p>}
+                </div>
+            )}
+            {tab === 'jobs' && docketFor && (
+                <DocketForm bookingId={docketFor} personId={person.id} personName={person.name} onClose={() => setDocketFor(null)} />
+            )}
+            {tab === 'docs' && (
+                <div className="phone-body">
+                    <p className="muted">These tickets are stored with the person, so they stay readable when the phone is offline.</p>
+                    {person.skills.map((skill) => (
+                        <article key={skill.id} className="card">
+                            <p className="kicker">On this phone</p>
+                            <h2>{skill.name}</h2>
+                            <p>Expires {skill.expires}</p>
+                            <p className="muted">{skill.document}</p>
+                        </article>
+                    ))}
+                    {!person.skills.length && <p className="empty">No tickets on file yet.</p>}
+                </div>
+            )}
+            {tab === 'safety' && <SafetyForm personId={person.id} offers={offers.map((offer) => offer.booking.id)} />}
+            <section className="card">
+                <p className="kicker">Outbox</p>
+                <h2>Waiting to sync</h2>
                 <ul className="feed">
                     {state.outbox.map((docket) => (
                         <li key={docket.id}><span><strong>Docket · {docket.signedBy}</strong><small>{docket.start}–{docket.end}</small></span></li>
@@ -125,14 +152,14 @@ export function FieldApp() {
                     {!state.outbox.length && !state.safetyNotes.some((note) => note.status === 'queued') && <li>Outbox is empty.</li>}
                 </ul>
                 <button type="button" className="btn btn-primary" onClick={() => store.syncField()}>Sync now</button>
-                <h3>Recent sync</h3>
-                <ul className="feed">
-                    {state.activity.filter((event) => event.source === 'field-sync').slice(0, 5).map((event) => (
-                        <li key={event.id}><span><strong>{event.message}</strong><small>{prettyWhen(event.at)}</small></span></li>
-                    ))}
-                </ul>
-                <Link to="/app">Back to the office</Link>
-            </aside>
+                {state.activity.some((event) => event.source === 'field-sync') && (
+                    <ul className="feed">
+                        {state.activity.filter((event) => event.source === 'field-sync').slice(0, 3).map((event) => (
+                            <li key={event.id}><span><strong>{event.message}</strong><small>{prettyWhen(event.at)}</small></span></li>
+                        ))}
+                    </ul>
+                )}
+            </section>
         </div>
     )
 }

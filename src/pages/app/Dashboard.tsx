@@ -1,11 +1,15 @@
 import { Link } from 'react-router-dom'
+import { useGrok } from '../../components/GrokDock.tsx'
 import { buildAlerts } from '../../lib/bots.ts'
 import { prettyWhen, round1 } from '../../lib/format.ts'
+import { usePair } from '../../lib/pair.tsx'
 import { statusFor, weekHours } from '../../lib/rules.ts'
 import { useStore } from '../../lib/store.tsx'
 
 export function Dashboard() {
     const { state, today } = useStore()
+    const pair = usePair()
+    const grok = useGrok()
     const todays = state.bookings.filter((booking) => booking.date === today)
     const openSlots = todays.reduce((sum, booking) => sum + booking.slots.filter((slot) => !slot.personId).length, 0)
     const rostered = new Set(todays.flatMap((booking) => booking.slots.map((slot) => slot.personId).filter(Boolean))).size
@@ -21,10 +25,41 @@ export function Dashboard() {
             <header className="page-title">
                 <div>
                     <p className="kicker">Today</p>
-                    <h1>The yard at a glance</h1>
+                    <h1>{greeting()}{pair.holder ? `, ${pair.holder.name.split(' ')[0]}` : ''}</h1>
                 </div>
-                <Link to="/app/board" className="btn btn-primary btn-small">Go to the board</Link>
+                <Link to="/app/board" className="btn btn-primary btn-small">Jobs</Link>
             </header>
+            <div className="pair-grid">
+                {[pair.primary, pair.partner].filter((person, index, list) => person && list.findIndex((item) => item?.id === person.id) === index).map((person) => person && (
+                    <article key={person.id} className="card pair-card">
+                        <p className="kicker">{pair.holderId === person.id ? 'On this phone' : 'The other one'}</p>
+                        <h2>{person.name}</h2>
+                        <ul className="feed">
+                            {todays.filter((booking) => booking.slots.some((slot) => slot.personId === person.id)).map((booking) => (
+                                <li key={booking.id}>
+                                    <span>
+                                        <strong>{booking.title}</strong>
+                                        <small>{booking.start}–{booking.end} · {booking.site}</small>
+                                    </span>
+                                </li>
+                            ))}
+                        </ul>
+                        {!todays.some((booking) => booking.slots.some((slot) => slot.personId === person.id)) && <p className="muted">Nothing with their name on it today.</p>}
+                    </article>
+                ))}
+            </div>
+            <section className="card grok-card">
+                <p className="kicker">Grok</p>
+                <h2>Ask before you roll</h2>
+                <p>Grok reads today's jobs, tickets and the rules the board already checked.</p>
+                <button
+                    type="button"
+                    className="btn btn-primary btn-small"
+                    onClick={() => grok.openWith('Give the two of us a morning brief. Start with our own jobs, then open slots, then anything that blocks the day.')}
+                >
+                    Morning brief
+                </button>
+            </section>
             <div className="kpi-grid">
                 <Link to="/app/board" className="kpi"><strong>{todays.length}</strong><span>Jobs today</span></Link>
                 <Link to="/app/board" className="kpi"><strong>{rostered}</strong><span>People rostered</span></Link>
@@ -111,4 +146,11 @@ export function Dashboard() {
             </div>
         </div>
     )
+}
+
+function greeting() {
+    const hour = new Date().getHours()
+    if (hour < 12) return 'Morning'
+    if (hour < 17) return 'Afternoon'
+    return 'Evening'
 }

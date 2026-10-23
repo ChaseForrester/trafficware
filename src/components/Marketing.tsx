@@ -10,11 +10,12 @@ export function Marketing() {
 
     return (
         <div className="site">
-            <div className="stripe" />
-            <header className="nav">
+            <header className="nav nav-dark">
                 <div className="nav-inner wrap">
-                    <Logo />
+                    <Logo to="/" />
                     <nav className="nav-links" aria-label="Primary">
+                        <Link to="/business">Office</Link>
+                        <Link to="/crew">Crew</Link>
                         <Link to="/#how">How it works</Link>
                         <NavLink to="/product">Product</NavLink>
                         <NavLink to="/platform">Platform</NavLink>
@@ -30,22 +31,24 @@ export function Marketing() {
             <footer className="footer">
                 <div className="wrap footer-grid">
                     <div>
-                        <Logo />
+                        <Logo to="/" lockup />
                         <p className="muted">Booking, people and field dockets for traffic companies. One record for the shift.</p>
                     </div>
                     <div>
                         <p className="kicker">Product</p>
                         <Link to="/#how">Six steps</Link>
+                        <Link to="/business">Office</Link>
+                        <Link to="/crew">Crew</Link>
                         <Link to="/product">Features</Link>
                         <Link to="/platform">How it fits together</Link>
                         <Link to="/pricing">Pricing</Link>
                     </div>
                     <div>
                         <p className="kicker">Workspace</p>
-                        <Link to="/app">Today</Link>
-                        <Link to="/app/board">Booking board</Link>
-                        <Link to="/field">Field app</Link>
-                        <Link to="/app/closeout">Close-out</Link>
+                        <Link to="/start">Start a company</Link>
+                        <Link to="/join">Join the crew</Link>
+                        <Link to="/app">Office</Link>
+                        <Link to="/dockets">Print dockets</Link>
                     </div>
                     <div>
                         <p className="kicker">Demo</p>
