@@ -79,6 +79,30 @@ export type BookingStatus =
   | 'approved'
   | 'invoiced'
 
+export type Geofence = {
+  lat: number
+  lng: number
+  radiusM: number
+}
+
+export type SiteCheck = {
+  id: string
+  personId: string
+  at: string
+  lat: number
+  lng: number
+  accuracyM: number
+  distanceM: number
+  inside: boolean
+}
+
+export type DocketSiteCheck = {
+  inside: boolean
+  distanceM: number
+  accuracyM: number
+  at: string
+}
+
 export type Booking = {
   id: string
   clientId: string
@@ -93,6 +117,8 @@ export type Booking = {
   vehicleId: string | null
   equipment: { id: string; qty: number }[]
   invoiceId: string | null
+  geofence: Geofence | null
+  siteChecks: SiteCheck[]
 }
 
 export type DocketStatus = 'queued' | 'submitted' | 'approved' | 'queried'
@@ -111,6 +137,7 @@ export type Docket = {
   status: DocketStatus
   submittedAt: string
   queryNote: string
+  siteCheck: DocketSiteCheck | null
 }
 
 export type SafetyNote = {
@@ -154,8 +181,11 @@ export type Activity = {
   message: string
 }
 
+export type HomeState = 'NSW' | 'VIC' | 'QLD' | 'SA' | 'WA' | 'TAS' | 'ACT' | 'NT'
+
 export type Settings = {
   companyName: string
+  homeState: HomeState
   maxShiftHours: number
   maxWeekHours: number
   minRestHours: number

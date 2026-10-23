@@ -1,5 +1,6 @@
 import type { AppState } from '../types.ts'
 import { loadPin, savePin } from './grok.ts'
+import { normalizeState } from './persistence.ts'
 
 export type CloudPull =
     | { mode: 'cloud'; state: AppState; detail: string }
@@ -26,7 +27,7 @@ export async function pullYard(pin = loadPin()): Promise<CloudPull> {
         return { mode: 'locked', detail: data.detail || 'Enter the access code to open the shared yard.' }
     }
     if (data.mode === 'cloud' && valid(data.state)) {
-        return { mode: 'cloud', state: data.state, detail: 'Shared yard loaded from Firestore.' }
+        return { mode: 'cloud', state: normalizeState(data.state), detail: 'Shared yard loaded from Firestore.' }
     }
     if (data.mode === 'empty') return { mode: 'empty', detail: data.detail || 'Firestore has no yard yet.' }
     return { mode: 'off', detail: data.detail || data.error || 'This browser holds the yard.' }

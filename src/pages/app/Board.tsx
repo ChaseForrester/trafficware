@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { RosterBoard } from '../../components/RosterBoard.tsx'
+import { StatePack } from '../../components/StatePack.tsx'
 import { WeekRoster } from '../../components/WeekRoster.tsx'
 import { ROLES } from '../../types.ts'
 import { useStore } from '../../lib/store.tsx'
@@ -34,6 +35,7 @@ export function BoardPage() {
 
     return (
         <div className="page-pad">
+            <StatePack />
             <header className="page-title">
                 <h1>Booking board</h1>
                 <button type="button" className="btn btn-primary btn-small" onClick={() => setOpen((value) => !value)}>

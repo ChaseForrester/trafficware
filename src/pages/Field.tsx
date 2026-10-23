@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { Avatar } from '../components/Avatar.tsx'
@@ -9,6 +9,7 @@ import { usePair } from '../lib/pair.tsx'
 import { useSession } from '../lib/session.tsx'
 import { findClient } from '../lib/rules.ts'
 import { useStore } from '../lib/store.tsx'
+import type { Booking } from '../types.ts'
 
 export function FieldApp() {
     useTitle('Field · Trafficware')
@@ -101,6 +102,7 @@ export function FieldApp() {
                                 <p className="muted">{booking.start}–{booking.end}</p>
                                 <p>{booking.site}</p>
                                 <p className="muted">{client?.name}</p>
+                                <SiteCheck booking={booking} personId={person.id} personName={person.name} />
                                 {booking.notes && <p>{booking.notes}</p>}
                                 {slot.response === 'pending' && (
                                     <div className="hero-actions">
@@ -202,6 +204,7 @@ function DocketForm({
         <form className="phone-body form" onSubmit={onSubmit}>
             <IconKicker name="dockets">Digital docket</IconKicker>
             <h2>{booking.title}</h2>
+            <SiteCheck booking={booking} personId={personId} personName={personName} auto />
             <label className="field">Start<input type="time" value={start} onChange={(event) => setStart(event.target.value)} /></label>
             <label className="field">Finish<input type="time" value={end} onChange={(event) => setEnd(event.target.value)} /></label>
             <label className="field">Break minutes<input type="number" min="0" value={breakMins} onChange={(event) => setBreakMins(Number(event.target.value))} /></label>
@@ -216,6 +219,142 @@ function DocketForm({
             <button type="submit" className="btn btn-primary">{state.offline ? 'Queue docket' : 'Submit docket'}</button>
             <button type="button" className="btn btn-ghost" onClick={onClose}>Back</button>
         </form>
+    )
+}
+
+const CONSENT_KEY = 'trafficware.location-consent'
+const autoAsked = new Set<string>()
+
+function readConsent() {
+    try {
+        return localStorage.getItem(CONSENT_KEY)
+    } catch {
+        return null
+    }
+}
+
+function SiteCheck({
+    booking,
+    personId,
+    personName,
+    auto = false,
+}: {
+    booking: Booking
+    personId: string
+    personName: string
+    auto?: boolean
+}) {
+    const { recordSiteCheck } = useStore()
+    const [consent, setConsent] = useState<string | null>(() => readConsent())
+    const [busy, setBusy] = useState(false)
+    const [error, setError] = useState('')
+    const latest = booking.siteChecks.find((check) => check.personId === personId)
+    const recordRef = useRef(recordSiteCheck)
+
+    useEffect(() => {
+        recordRef.current = recordSiteCheck
+    })
+
+    function remember(value: 'yes' | 'no') {
+        localStorage.setItem(CONSENT_KEY, value)
+        setConsent(value)
+    }
+
+    function check() {
+        if (!booking.geofence) {
+            setError('The office has not set a boundary on this job.')
+            return
+        }
+        if (!navigator.geolocation) {
+            setError('This browser has no location reading.')
+            return
+        }
+        setBusy(true)
+        setError('')
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                recordRef.current({
+                    bookingId: booking.id,
+                    personId,
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude,
+                    accuracyM: position.coords.accuracy,
+                })
+                setBusy(false)
+            },
+            (failure) => {
+                setError(
+                    failure.code === failure.PERMISSION_DENIED
+                        ? 'Location stayed off. You can still sign the docket. The office will see that no check was recorded.'
+                        : 'Location did not come back. Keep this page open and try again.',
+                )
+                setBusy(false)
+            },
+            { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 },
+        )
+    }
+
+    useEffect(() => {
+        if (!auto || consent !== 'yes' || !booking.geofence || !navigator.geolocation) return
+        const key = `${booking.id}:${personId}`
+        if (autoAsked.has(key) || booking.siteChecks.some((item) => item.personId === personId)) return
+        autoAsked.add(key)
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                recordRef.current({
+                    bookingId: booking.id,
+                    personId,
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude,
+                    accuracyM: position.coords.accuracy,
+                })
+            },
+            () => {
+                autoAsked.delete(key)
+            },
+            { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 },
+        )
+    }, [auto, booking.geofence, booking.id, booking.siteChecks, consent, personId])
+
+    return (
+        <div className="site-check">
+            <p className="kicker">On site</p>
+            <p className="muted">
+                {booking.geofence
+                    ? `Boundary is ${booking.geofence.radiusM} m around the pin for ${personName.split(' ')[0]}'s shift.`
+                    : 'No boundary on this job yet. The office sets that on the board.'}
+            </p>
+            {latest && (
+                <p className={latest.inside ? 'tag' : 'issue warn'}>
+                    Last check {latest.inside ? 'inside' : 'outside'} · {latest.distanceM} m from the pin · GPS ±{Math.round(latest.accuracyM)} m · {prettyWhen(latest.at)}
+                </p>
+            )}
+            {consent !== 'yes' && (
+                <>
+                    <p>
+                        Location is read when you tap the check, and only while this page is open. It records whether you were inside the job boundary for the docket, the timesheet and safety. You can turn it off.
+                    </p>
+                    <div className="hero-actions">
+                        <button type="button" className="btn btn-primary btn-small" onClick={() => remember('yes')}>Use location for site checks</button>
+                        {consent !== 'no' && (
+                            <button type="button" className="btn btn-ghost btn-small" onClick={() => remember('no')}>Not now</button>
+                        )}
+                    </div>
+                </>
+            )}
+            {consent === 'yes' && (
+                <>
+                    <p className="muted">{busy ? 'This page is reading location.' : 'Location stays off until you tap the check, and this page has to stay open.'}</p>
+                    <div className="hero-actions">
+                        <button type="button" className="btn btn-amber btn-small" disabled={busy} onClick={check}>
+                            {busy ? 'Reading location…' : "Check I'm on site"}
+                        </button>
+                        <button type="button" className="btn btn-ghost btn-small" onClick={() => remember('no')}>Turn location off</button>
+                    </div>
+                </>
+            )}
+            {error && <p className="form-error" role="alert">{error}</p>}
+        </div>
     )
 }
 

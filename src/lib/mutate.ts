@@ -4,12 +4,14 @@ import type {
     AppState,
     Booking,
     Docket,
+    Geofence,
     IntegrationId,
     NoticeTone,
     Person,
 } from '../types.ts'
 import { invoiceDrafts, payrollRows, rosterPlan } from './bots.ts'
 import { addDays, round1, shiftHours, todayIso, uid } from './format.ts'
+import { distanceMetres } from './geo.ts'
 import { findPerson, findVehicle, slotIssues, validateAssignment, vehicleIssues } from './rules.ts'
 
 export type Result = {
@@ -179,6 +181,8 @@ export function createBooking(state: AppState, input: NewBooking): Result {
         vehicleId: null,
         equipment: [],
         invoiceId: null,
+        geofence: null,
+        siteChecks: [],
     }
     let next = log({ ...state, bookings: [...state.bookings, booking] }, 'system', `Job opened: ${booking.title}.`)
     if (input.vehicleId) {
@@ -217,6 +221,15 @@ export type BookingPatch = {
     start: string
     end: string
     notes: string
+    geofence: Geofence | null
+}
+
+function fenceOk(fence: Geofence | null) {
+    if (!fence) return true
+    if (!Number.isFinite(fence.lat) || fence.lat < -90 || fence.lat > 90) return false
+    if (!Number.isFinite(fence.lng) || fence.lng < -180 || fence.lng > 180) return false
+    if (!Number.isFinite(fence.radiusM) || fence.radiusM < 50 || fence.radiusM > 5000) return false
+    return true
 }
 
 export function updateBooking(state: AppState, id: string, patch: BookingPatch): Result {
@@ -226,6 +239,9 @@ export function updateBooking(state: AppState, id: string, patch: BookingPatch):
     if (block) return ok(state, block, 'bad')
     if (!patch.title.trim() || !patch.clientId || !patch.date || !patch.start || !patch.end) {
         return ok(state, 'A job needs a name, a client, a day and hours.', 'bad')
+    }
+    if (!fenceOk(patch.geofence)) {
+        return ok(state, 'A site boundary needs a pin and a radius between 50 and 5,000 metres.', 'bad')
     }
     const nextBooking: Booking = {
         ...booking,
@@ -237,6 +253,7 @@ export function updateBooking(state: AppState, id: string, patch: BookingPatch):
         start: patch.start,
         end: patch.end,
         notes: patch.notes.trim(),
+        geofence: patch.geofence,
     }
     const trial = replaceBooking(state, nextBooking)
     const before = crewIssues(state, booking)
@@ -555,6 +572,53 @@ export type DocketInput = {
     photoName: string
 }
 
+export type SiteCheckInput = {
+    bookingId: string
+    personId: string
+    lat: number
+    lng: number
+    accuracyM: number
+}
+
+export function recordSiteCheck(state: AppState, input: SiteCheckInput): Result {
+    const booking = state.bookings.find((item) => item.id === input.bookingId)
+    if (!booking) return ok(state, 'That job is not on the board.', 'bad')
+    const fence = booking.geofence
+    if (!fence) return ok(state, 'Set a site boundary on this job before checking location.', 'warn')
+    if (!Number.isFinite(input.lat) || !Number.isFinite(input.lng)) {
+        return ok(state, 'The phone did not return a location.', 'bad')
+    }
+    const accuracyM = Number.isFinite(input.accuracyM) ? input.accuracyM : 9999
+    const distanceM = Math.round(distanceMetres(input.lat, input.lng, fence.lat, fence.lng))
+    const inside = distanceM <= fence.radiusM
+    const check = {
+        id: uid('geo'),
+        personId: input.personId,
+        at: new Date().toISOString(),
+        lat: input.lat,
+        lng: input.lng,
+        accuracyM,
+        distanceM,
+        inside,
+    }
+    const nextBooking: Booking = {
+        ...booking,
+        siteChecks: [check, ...booking.siteChecks.filter((item) => item.id !== check.id)].slice(0, 12),
+    }
+    const person = findPerson(state, input.personId)
+    const name = person?.name ?? 'Crew'
+    const rough = accuracyM > 100 ? ' GPS is rough, so treat the edge as approximate.' : ''
+    const where = inside ? 'inside' : 'outside'
+    const notice = inside
+        ? `${name} is inside the site, ${distanceM} m from the pin.${rough}`
+        : `${name} is outside the site, ${distanceM} m from the pin. The fence is ${fence.radiusM} m.${rough}`
+    return ok(
+        log(replaceBooking(state, nextBooking), 'field-sync', `${name} checked ${where} the fence on ${booking.title}.`),
+        notice,
+        inside && accuracyM <= 100 ? 'ok' : 'warn',
+    )
+}
+
 export function submitDocket(state: AppState, input: DocketInput): Result {
     if (!input.signedBy.trim()) return ok(state, 'Type your name to sign the docket.', 'bad')
     const booking = state.bookings.find((item) => item.id === input.bookingId)
@@ -563,6 +627,15 @@ export function submitDocket(state: AppState, input: DocketInput): Result {
         (docket) => docket.bookingId === input.bookingId && docket.personId === input.personId && docket.status !== 'queried',
     )
     if (existing) return ok(state, 'A docket is already in for this job.', 'warn')
+    const latest = booking.siteChecks.find((check) => check.personId === input.personId)
+    const siteCheck = latest
+        ? { inside: latest.inside, distanceM: latest.distanceM, accuracyM: latest.accuracyM, at: latest.at }
+        : null
+    const place = !siteCheck
+        ? ''
+        : siteCheck.inside
+            ? ' Last site check was inside the fence.'
+            : ' Last site check was outside the fence.'
     const docket: Docket = {
         id: uid('doc'),
         bookingId: input.bookingId,
@@ -577,6 +650,7 @@ export function submitDocket(state: AppState, input: DocketInput): Result {
         status: state.offline ? 'queued' : 'submitted',
         submittedAt: new Date().toISOString(),
         queryNote: '',
+        siteCheck,
     }
     if (state.offline) {
         return ok(
@@ -585,7 +659,7 @@ export function submitDocket(state: AppState, input: DocketInput): Result {
                 'field-sync',
                 `Docket queued offline for ${booking.title}.`,
             ),
-            'Docket queued. It will sync when Field Sync runs.',
+            `Docket queued. It will sync when Field Sync runs.${place}`,
             'warn',
         )
     }
@@ -612,7 +686,8 @@ export function submitDocket(state: AppState, input: DocketInput): Result {
             ],
         }
     }
-    return ok(next, `Docket submitted for ${booking.title}.`)
+    const outside = Boolean(siteCheck && !siteCheck.inside)
+    return ok(next, `Docket submitted for ${booking.title}.${place}`, outside ? 'warn' : 'ok')
 }
 
 export function syncField(state: AppState): Result {

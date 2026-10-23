@@ -31,6 +31,7 @@ import {
     setVehicle,
     setVehicleStatus,
     submitDocket,
+    recordSiteCheck,
     syncField,
     unassignPerson,
     updatePerson,
@@ -40,6 +41,7 @@ import {
     pushIntegration,
     type DemoInput,
     type DocketInput,
+    type SiteCheckInput,
     type BookingPatch,
     type NewBooking,
     type NewClient,
@@ -80,6 +82,7 @@ type StoreValue = {
     pushIntegration: (id: IntegrationId) => Result
     setOffline: (offline: boolean) => Result
     submitDocket: (input: DocketInput) => Result
+    recordSiteCheck: (input: SiteCheckInput) => Result
     syncField: () => Result
     addSafetyNote: (input: { personId: string; bookingId: string | null; note: string; photoName: string }) => Result
     approveDocket: (id: string) => Result
@@ -186,6 +189,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         pushIntegration: (id) => commit(pushIntegration(stateRef.current, id)),
         setOffline: (offline) => commit(setOffline(stateRef.current, offline)),
         submitDocket: (input) => commit(submitDocket(stateRef.current, input)),
+        recordSiteCheck: (input) => commit(recordSiteCheck(stateRef.current, input)),
         syncField: () => commit(syncField(stateRef.current)),
         addSafetyNote: (input) => commit(addSafetyNote(stateRef.current, input)),
         approveDocket: (id) => commit(approveDocket(stateRef.current, id)),

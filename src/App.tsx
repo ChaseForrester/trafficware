@@ -19,6 +19,7 @@ import { Home } from './pages/Home.tsx'
 import { Platform } from './pages/Platform.tsx'
 import { Pricing } from './pages/Pricing.tsx'
 import { Product } from './pages/Product.tsx'
+import { ClientView, Compare, Guides, Privacy } from './pages/Trust.tsx'
 import { DocketBlank, DocketCodes, DocketPack, DocketSheet } from './pages/Dockets.tsx'
 import { BoardPage } from './pages/app/Board.tsx'
 import { Clients } from './pages/app/Clients.tsx'
@@ -86,6 +87,11 @@ export default function App() {
                     <Route path="platform" element={<Platform />} />
                     <Route path="pricing" element={<Pricing />} />
                     <Route path="demo" element={<Demo />} />
+                    <Route path="privacy" element={<Privacy />} />
+                    <Route path="guides" element={<Guides />} />
+                    <Route path="compare" element={<Compare />} />
+                    <Route path="client" element={<ClientView />} />
+                    <Route path="how" element={<Navigate to={{ pathname: '/', hash: 'how' }} replace />} />
                   </Route>
                   <Route path="*" element={<Missing />} />
                 </Routes>

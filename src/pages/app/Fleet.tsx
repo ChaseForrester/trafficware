@@ -12,6 +12,7 @@ export function Fleet() {
                 <div>
                     <IconKicker name="fleet">Fleet and equipment</IconKicker>
                     <h1>Trucks, rego and gear</h1>
+                    <p className="muted">A ping rewrites the label stored for that truck. Crew location is a separate check on the field phone, against the circle on the job.</p>
                 </div>
             </header>
             {!gpsOn && <p className="banner">GPS telematics is off. Connect it under Integrations before a ping will move a truck.</p>}

@@ -1,4 +1,5 @@
-import type { AppState, Booking, Docket, Person, SkillRecord } from '../types.ts'
+import type { AppState, Docket, Person, SkillRecord } from '../types.ts'
+import { fenceFor } from './fences.ts'
 import { addDays, todayIso, uid } from './format.ts'
 
 const COLORS = ['#1a4f86', '#1c7c4a', '#a15c00', '#6b3a1f', '#3f3a64', '#0f6e6e', '#8a3e08', '#1e3a2f', '#5c3b6e', '#204060', '#6b4f1d']
@@ -37,6 +38,7 @@ function docket(
         status,
         submittedAt: new Date().toISOString(),
         queryNote: '',
+        siteCheck: null,
         ...extra,
     }
 }
@@ -286,7 +288,7 @@ export function buildSeed(today: string): AppState {
         },
     ]
 
-    const bookings: Booking[] = [
+    const bookings = [
         {
             id: 'b-princes',
             clientId: 'c-mari',
@@ -426,7 +428,11 @@ export function buildSeed(today: string): AppState {
     return {
         version: 1,
         people,
-        bookings,
+        bookings: bookings.map((booking) => ({
+            ...booking,
+            geofence: fenceFor(booking.id),
+            siteChecks: [],
+        })),
         dockets,
         outbox: [],
         safetyNotes: [],
@@ -562,6 +568,7 @@ export function buildSeed(today: string): AppState {
         ],
         settings: {
             companyName: 'Trafficware Demo',
+            homeState: 'VIC',
             maxShiftHours: 12,
             maxWeekHours: 60,
             minRestHours: 10,

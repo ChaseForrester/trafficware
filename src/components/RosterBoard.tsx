@@ -1,13 +1,17 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import type { DragEvent, FormEvent } from 'react'
 import { rosterPlan } from '../lib/bots.ts'
-import { addDays, cx, prettyDate, prettyLong, round1, startOfWeek } from '../lib/format.ts'
+import { addDays, cx, prettyDate, prettyLong, prettyWhen, round1, startOfWeek } from '../lib/format.ts'
+import { fenceDraft, parseFence } from '../lib/geo.ts'
+import type { FenceDraft } from '../lib/geo.ts'
 import { Avatar } from './Avatar.tsx'
 import { useGrok } from './GrokDock.tsx'
 import { IconKicker } from './Icons.tsx'
 import { findClient, findPerson, slotIssues, statusFor, vehicleIssues, weekHours } from '../lib/rules.ts'
 import { useStore } from '../lib/store.tsx'
 import { ROLES, type Booking } from '../types.ts'
+
+const SiteMap = lazy(() => import('./SiteMap.tsx'))
 
 const STATUS_LABEL = {
     planning: 'Open',
@@ -235,6 +239,9 @@ function JobCard({
         end: booking.end,
         notes: booking.notes,
     })
+    const [fence, setFence] = useState<FenceDraft>(() => fenceDraft(booking.geofence))
+    const [mapOpen, setMapOpen] = useState(false)
+    const [fenceError, setFenceError] = useState('')
 
     useEffect(() => {
         if (focused) card.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
@@ -242,7 +249,13 @@ function JobCard({
 
     function saveJob(event: FormEvent) {
         event.preventDefault()
-        const result = store.updateBooking(booking.id, draft)
+        const geofence = parseFence(fence)
+        if (geofence === 'bad') {
+            setFenceError('A site boundary needs a pin and a radius between 50 and 5,000 metres. Leave the pin blank to clear it.')
+            return
+        }
+        setFenceError('')
+        const result = store.updateBooking(booking.id, { ...draft, geofence })
         if (result.tone !== 'bad') setEditing(false)
     }
 
@@ -277,6 +290,8 @@ function JobCard({
                                 end: booking.end,
                                 notes: booking.notes,
                             })
+                            setFence(fenceDraft(booking.geofence))
+                            setFenceError('')
                             setEditing((open) => !open)
                         }}
                     >
@@ -342,9 +357,53 @@ function JobCard({
                         Notes
                         <input value={draft.notes} onChange={(event) => setDraft({ ...draft, notes: event.target.value })} />
                     </label>
+                    <div className="form-row">
+                        <label className="field">
+                            Pin latitude
+                            <input inputMode="decimal" value={fence.lat} onChange={(event) => setFence({ ...fence, lat: event.target.value })} placeholder="-37.8136" />
+                        </label>
+                        <label className="field">
+                            Pin longitude
+                            <input inputMode="decimal" value={fence.lng} onChange={(event) => setFence({ ...fence, lng: event.target.value })} placeholder="144.9631" />
+                        </label>
+                        <label className="field">
+                            Radius metres
+                            <input inputMode="numeric" value={fence.radiusM} onChange={(event) => setFence({ ...fence, radiusM: event.target.value })} />
+                        </label>
+                    </div>
+                    <p className="muted">Leave the pin blank to clear the boundary. The numbers save even if the map tiles do not load.</p>
+                    <button type="button" className="btn btn-ghost btn-small" onClick={() => setMapOpen((open) => !open)}>
+                        {mapOpen ? 'Hide map' : 'Show map'}
+                    </button>
+                    {mapOpen && (
+                        <Suspense fallback={<p className="muted">Loading the map…</p>}>
+                            <SiteMap
+                                lat={Number.isFinite(Number(fence.lat)) && fence.lat.trim() ? Number(fence.lat) : -37.8136}
+                                lng={Number.isFinite(Number(fence.lng)) && fence.lng.trim() ? Number(fence.lng) : 144.9631}
+                                radiusM={Number.isFinite(Number(fence.radiusM)) && Number(fence.radiusM) > 0 ? Number(fence.radiusM) : 250}
+                                onPick={(lat, lng) => setFence((current) => ({ ...current, lat: lat.toFixed(5), lng: lng.toFixed(5) }))}
+                            />
+                        </Suspense>
+                    )}
+                    {fenceError && <p className="form-error" role="alert">{fenceError}</p>}
                     <button type="submit" className="btn btn-primary btn-small">Save job</button>
                 </form>
             )}
+            <div className="site-check">
+                {booking.geofence ? (
+                    <p className="muted">Site boundary {booking.geofence.radiusM} m around the pin.</p>
+                ) : (
+                    <p className="muted">No site boundary on this job yet.</p>
+                )}
+                {booking.siteChecks.slice(0, 3).map((check) => {
+                    const who = findPerson(state, check.personId)
+                    return (
+                        <p key={check.id} className={check.inside ? 'tag' : 'issue warn'}>
+                            {who?.name ?? 'Crew'} {check.inside ? 'inside' : 'outside'} the fence · {check.distanceM} m · GPS ±{Math.round(check.accuracyM)} m · {prettyWhen(check.at)}
+                        </p>
+                    )
+                })}
+            </div>
             <div className="slots">
                 {booking.slots.map((slot) => {
                     const person = findPerson(state, slot.personId)

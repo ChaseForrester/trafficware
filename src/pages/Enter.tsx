@@ -62,6 +62,21 @@ export function StartCompany() {
                 {error ? <p className="form-error" role="alert">{error}</p> : null}
                 <button type="submit" className="btn btn-primary" disabled={busy}>{busy ? 'Checking…' : 'Enter the office'}</button>
             </form>
+            <section className="card page-gap">
+                <h2>The sample yard and a company workspace</h2>
+                <p>
+                    The public board is a sample week for West, Central and Geelong. It stays in this browser until you open the shared yard.
+                    The browser copy uses the local storage key <code>trafficware.v1</code>.
+                </p>
+                <p>
+                    Enter the office signs you in as Super Admin on this device. A private workspace is the same app pointed at Firestore project trafficware-yard.
+                    Integrations explains that project and the access code that opens it. The Integrations page records the project as Sydney.
+                </p>
+                <p>
+                    People and tickets are added on the people page. A CSV import is not in this build. Crew join on their own page and see their jobs, tickets and dockets.
+                </p>
+                <p><Link to="/app/integrations">Shared yard</Link> · <Link to="/privacy">Privacy and location</Link> · <Link to="/guides#offline">What the phone does with no signal</Link></p>
+            </section>
             <p><Link to="/business">What the office page covers</Link> · <Link to="/join">I work on the tools instead</Link></p>
         </main>
     )

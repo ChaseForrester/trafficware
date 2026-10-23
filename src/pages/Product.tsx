@@ -30,7 +30,21 @@ const features: { href: string; icon: IconName; kicker: string; title: string; t
         icon: 'field',
         kicker: 'Field app',
         title: 'Accept, docket, photograph.',
-        text: 'Crew work from the phone: job offers, signed dockets, near misses and tickets stored for offline use.',
+        text: 'Crew work from the phone: job offers, a one-tap site check while the page is open, signed dockets, near misses and tickets stored for offline use.',
+    },
+    {
+        href: '/guides#site',
+        icon: 'field',
+        kicker: 'Site check',
+        title: 'Inside the fence, on the docket.',
+        text: 'The office saves a circle on the job. The phone compares one location reading with that circle and records inside or outside. The page has to stay open. There is no background track.',
+    },
+    {
+        href: '/client',
+        icon: 'office',
+        kicker: 'Client view',
+        title: 'The client sees status, not rates.',
+        text: 'A read-only list of the job, the day, signed dockets and the site check. Pay rates and phone numbers stay on the office side.',
     },
     {
         href: '/app/closeout',
@@ -58,6 +72,9 @@ export function Product() {
                 <p className="lede">
                     Trafficware is built for traffic companies that book people, vehicles and equipment onto the same job,
                     then need the docket to survive contact with payroll.
+                </p>
+                <p className="lede">
+                    <Link to="/guides">Guides</Link> cover the week-hour limit, the night rest gap and the field phone. <Link to="/compare">Compare</Link> says what this yard checks. <Link to="/privacy">Privacy</Link> covers the site check.
                 </p>
             </header>
             <div className="grid-2">

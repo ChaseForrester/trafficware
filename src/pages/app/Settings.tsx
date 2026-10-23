@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { IconKicker } from '../../components/Icons.tsx'
+import { StatePack } from '../../components/StatePack.tsx'
 import { useStore } from '../../lib/store.tsx'
 
 export function Settings() {
@@ -35,6 +36,7 @@ export function Settings() {
                     <h1>Rules the board enforces</h1>
                 </div>
             </header>
+            <StatePack />
             <form className="card form" onSubmit={onSubmit}>
                 <label className="field">
                     Company name

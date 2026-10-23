@@ -41,6 +41,7 @@ export function Dashboard() {
                 <Kpi icon="dockets" label="Dockets to approve" value={toApprove} note="Submitted, waiting on the office" href="/app/closeout" />
             </div>
             <p className="muted">{filled} of {weekSlots.length} shifts filled this week · {onLeave} on leave</p>
+            <StarterChecks />
             <section className="card" id="alerts">
                 <div className="job-head">
                     <IconKicker name="alert">Compliance alerts</IconKicker>
@@ -117,6 +118,35 @@ export function Dashboard() {
                 </section>
             )}
         </div>
+    )
+}
+
+function StarterChecks() {
+    const { state } = useStore()
+    const starters = state.people.filter((person) => person.onboarding.some((item) => !item.done))
+    return (
+        <section className="card">
+            <div className="job-head">
+                <IconKicker name="people">Onboarding</IconKicker>
+                <Link to="/app/people">People</Link>
+            </div>
+            <ul className="feed">
+                {starters.map((person) => {
+                    const done = person.onboarding.filter((item) => item.done).length
+                    return (
+                        <li key={person.id}>
+                            <Link to={`/app/people/${person.id}`}>
+                                <span>
+                                    <strong>{person.name}</strong>
+                                    <small>{done} of {person.onboarding.length} checks done · {person.depot}</small>
+                                </span>
+                            </Link>
+                        </li>
+                    )
+                })}
+                {!starters.length && <li>No one is waiting on onboarding checks.</li>}
+            </ul>
+        </section>
     )
 }
 

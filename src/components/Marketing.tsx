@@ -15,6 +15,11 @@ const PHONE_PLACES = [
     { to: '/product', label: 'Product', detail: 'Features' },
     { to: '/pricing', label: 'Pricing', detail: 'Plans' },
     { to: '/demo', label: 'Book a demo', detail: 'Talk to us' },
+    { to: '/guides', label: 'Guides', detail: 'Fatigue, rest, dockets, site check' },
+    { to: '/compare', label: 'Compare', detail: 'What this yard checks' },
+    { to: '/privacy', label: 'Privacy', detail: 'Location and the sample yard' },
+    { to: '/client', label: 'Client view', detail: 'Job status without rates' },
+    { to: '/start', label: 'Start a company', detail: 'Sample yard and a workspace' },
 ]
 
 export function Marketing() {
@@ -124,13 +129,17 @@ export function Marketing() {
                             <Link to="/product">Features</Link>
                             <Link to="/platform">How it fits together</Link>
                             <Link to="/pricing">Pricing</Link>
+                            <Link to="/guides">Guides</Link>
+                            <Link to="/compare">Compare</Link>
                         </div>
                         <div>
                             <IconKicker name="office">Workspace</IconKicker>
                             <Link to="/start">Start a company</Link>
                             <Link to="/join">Join the crew</Link>
                             <Link to="/app">Office</Link>
+                            <Link to="/client">Client view</Link>
                             <Link to="/dockets">Print dockets</Link>
+                            <Link to="/privacy">Privacy</Link>
                         </div>
                         <div>
                             <IconKicker name="demo">Demo</IconKicker>

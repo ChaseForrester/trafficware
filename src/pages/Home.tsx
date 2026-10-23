@@ -146,6 +146,23 @@ export function Home() {
                 <FeaturePlays />
             </section>
 
+            <section className="section wrap" id="site-check">
+                <div className="section-head">
+                    <IconKicker name="field">On the site</IconKicker>
+                    <h2>One check, while the page is open.</h2>
+                    <p className="lede">
+                        The office draws a circle on the job. The crew member opens the shift and taps the check.
+                        The phone reads location once and the docket keeps inside or outside. After the page closes, the check stops.
+                    </p>
+                </div>
+                <div className="hero-actions">
+                    <Link to="/field" className="btn btn-primary">Open the field phone</Link>
+                    <Link to="/guides" className="btn btn-ghost">Yard guides</Link>
+                    <Link to="/privacy" className="btn btn-ghost">Privacy</Link>
+                    <Link to="/client" className="btn btn-ghost">Client view</Link>
+                </div>
+            </section>
+
             <section className="doors" id="roles">
                 <div className="wrap">
                     <div className="section-head">

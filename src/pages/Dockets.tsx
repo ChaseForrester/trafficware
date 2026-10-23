@@ -49,7 +49,13 @@ function toDocketModel(state: AppState, docket: Docket, region: AuState, session
         worker: person?.name ?? docket.signedBy,
         phone: person?.phone ?? '',
         signedBy: docket.signedBy,
-        notes: [docket.notes, docket.queryNote ? `Office query: ${docket.queryNote}` : ''].filter(Boolean).join(' '),
+        notes: [
+            docket.notes,
+            docket.siteCheck
+                ? `Site check: ${docket.siteCheck.inside ? 'inside' : 'outside'} the fence, ${docket.siteCheck.distanceM} m from the pin, GPS ±${Math.round(docket.siteCheck.accuracyM)} m.`
+                : '',
+            docket.queryNote ? `Office query: ${docket.queryNote}` : '',
+        ].filter(Boolean).join(' '),
         nearMiss: docket.nearMiss,
         photo: docket.photoName,
         status: docket.status,
@@ -152,7 +158,7 @@ export function DocketSheet() {
     const { state } = useStore()
     const { session } = useSession()
     const docket = findDocket(state, id)
-    const [region, setRegion] = useState<AuState>(session?.state ?? 'VIC')
+    const [region, setRegion] = useState<AuState>(session?.state ?? state.settings.homeState)
     useTitle(docket ? `Docket ${docket.id} · Trafficware` : 'Docket · Trafficware')
 
     if (!docket) {
@@ -197,7 +203,7 @@ export function DocketPack() {
     const { state, today } = useStore()
     const { session } = useSession()
     const [params] = useSearchParams()
-    const [region, setRegion] = useState<AuState>(session?.state ?? 'VIC')
+    const [region, setRegion] = useState<AuState>(session?.state ?? state.settings.homeState)
     const mine = session?.role === 'field' ? session.personId : null
     const days = docketDays(state, mine)
     const requested = params.get('date')
@@ -283,7 +289,7 @@ export function DocketBlank() {
     useTitle('Blank docket · Trafficware')
     const { state } = useStore()
     const { session } = useSession()
-    const [region, setRegion] = useState<AuState>(session?.state ?? 'VIC')
+    const [region, setRegion] = useState<AuState>(session?.state ?? state.settings.homeState)
     const company = companyOf(state, session)
     const model = blankModel(company.companyName, company.abn, region)
 
