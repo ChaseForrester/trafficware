@@ -15,6 +15,7 @@ import { yardSnapshot } from '../lib/yardSnapshot.ts'
 
 type GrokValue = {
     configured: boolean | null
+    open: () => void
     openWith: (message: string) => void
 }
 
@@ -213,6 +214,7 @@ export function GrokProvider({ children }: { children: ReactNode }) {
 
     const value: GrokValue = {
         configured,
+        open: () => setOpen(true),
         openWith: (message) => {
             setOpen(true)
             if (!needsPin) void send(message)

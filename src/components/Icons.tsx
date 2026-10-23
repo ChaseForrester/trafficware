@@ -40,6 +40,11 @@ export type IconName =
     | 'xai'
     | 'check'
     | 'search'
+    | 'play'
+    | 'shield'
+    | 'jobs'
+    | 'user'
+    | 'wave'
 
 const stroke = {
     fill: 'none',
@@ -282,6 +287,26 @@ const MARKS: Record<IconName, ReactNode> = {
             <path d="M15.5 15.5 20 20" {...stroke} />
         </>,
     ),
+    play: wrap(
+        <>
+            <circle cx="12" cy="12" r="8" {...stroke} />
+            <path d="M10.5 9.2v5.6L16 12l-5.5-2.8Z" {...stroke} />
+        </>,
+    ),
+    shield: wrap(<path d="M12 3.5 19 6.2v5.3c0 3.6-2.7 6.4-7 8-4.3-1.6-7-4.4-7-8V6.2L12 3.5Z" {...stroke} />),
+    jobs: wrap(
+        <>
+            <rect x="3.5" y="8" width="17" height="11" rx="2" {...stroke} />
+            <path d="M9 8V6.5A1.5 1.5 0 0 1 10.5 5h3A1.5 1.5 0 0 1 15 6.5V8M3.5 13h17" {...stroke} />
+        </>,
+    ),
+    user: wrap(
+        <>
+            <circle cx="12" cy="9" r="3" {...stroke} />
+            <path d="M6.2 19c.8-2.6 2.7-4 5.8-4s5 1.4 5.8 4" {...stroke} />
+        </>,
+    ),
+    wave: wrap(<path d="M4 12h1.2M7.2 8.5v7M10.4 6v12M13.6 8.5v7M16.8 10.2v3.6M20 12h1" {...stroke} />),
 }
 
 const STACK = [

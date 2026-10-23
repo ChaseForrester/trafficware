@@ -65,27 +65,43 @@ export function Home() {
         <main>
             <section className="billboard">
                 <img
-                    className="billboard-photo"
+                    className="billboard-photo desk-only"
                     src="/photos/au-day.jpg"
                     alt="A traffic controller in orange high-visibility clothing stands beside queued traffic on an Australian road."
+                />
+                <img
+                    className="billboard-photo phone-only"
+                    src="/photos/au-night.jpg"
+                    alt="Night works on an Australian road, with an arrow board, cones, and crew in high-visibility clothing."
                 />
                 <div className="billboard-shade" />
                 <div className="billboard-grid">
                     <div className="billboard-copy">
-                        <IconKicker name="board" className="kicker-on-dark">Traffic operations</IconKicker>
-                        <h1>Put the right crew on the right job.</h1>
-                        <p className="lede">
-                            Trafficware is the booking board for traffic companies. Open a shift, drop a name,
-                            and the yard rules answer before anyone leaves the depot.
-                        </p>
-                        <div className="hero-actions">
-                            <a className="btn btn-amber" href="#roles">Choose a role</a>
-                            <a className="btn btn-on-dark" href="#how">Watch the six automations</a>
+                        <div className="desk-only">
+                            <IconKicker name="board" className="kicker-on-dark">Traffic operations</IconKicker>
+                            <h1>Put the right crew on the right job.</h1>
+                            <p className="lede">
+                                Trafficware is the booking board for traffic companies. Open a shift, drop a name,
+                                and the yard rules answer before anyone leaves the depot.
+                            </p>
+                            <div className="hero-actions">
+                                <a className="btn btn-amber" href="#roles">Choose a role</a>
+                                <a className="btn btn-on-dark" href="#how">Watch the six automations</a>
+                            </div>
+                            <div className="billboard-stats">
+                                <p><strong>{todayJobs.length}</strong><span>jobs today</span></p>
+                                <p><strong>{openSlots}</strong><span>open slots</span></p>
+                                <p><strong>{crew}</strong><span>active crew</span></p>
+                            </div>
                         </div>
-                        <div className="billboard-stats">
-                            <p><strong>{todayJobs.length}</strong><span>jobs today</span></p>
-                            <p><strong>{openSlots}</strong><span>open slots</span></p>
-                            <p><strong>{crew}</strong><span>active crew</span></p>
+                        <div className="phone-only phone-hero">
+                            <h1>Put the right crew<br />on the <em>right job.</em></h1>
+                            <p className="lede">See the live booking board and yard rules at a glance, so you roster with confidence.</p>
+                            <div className="phone-actions">
+                                <a className="btn phone-role" href="#roles"><Icon name="user" /> Choose a role</a>
+                                <a className="btn phone-watch" href="#how"><Icon name="play" /> Watch the six automations</a>
+                            </div>
+                            <p className="phone-live"><Icon name="shield" /> Bookings are live. Yard rules update in real time.</p>
                         </div>
                     </div>
                     {featured ? (
