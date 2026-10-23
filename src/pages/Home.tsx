@@ -3,6 +3,7 @@ import { Architecture } from '../components/Architecture.tsx'
 import { Icon, IconKicker } from '../components/Icons.tsx'
 import type { IconName } from '../components/Icons.tsx'
 import { Interactions } from '../components/Interactions.tsx'
+import { FeaturePlays } from '../components/FeaturePlays.tsx'
 import { StoryFigure } from '../components/RoleStories.tsx'
 import { RosterBoard } from '../components/RosterBoard.tsx'
 import { useTitle } from '../components/useTitle.ts'
@@ -140,33 +141,9 @@ export function Home() {
                 <div className="section-head">
                     <IconKicker name="product">Built for traffic control</IconKicker>
                     <h2>The same four jobs, on the live yard.</h2>
+                    <p className="lede">Each one plays inside the screen that does the job. Three steps, then it repeats.</p>
                 </div>
-                <div className="feature-band">
-                    <article className="card">
-                        <Icon name="board" />
-                        <h3>Drag-and-drop rostering</h3>
-                        <p>Drag a job to another day, or a name onto a slot.</p>
-                        <Link to="/app/board">Open the board</Link>
-                    </article>
-                    <article className="card">
-                        <Icon name="ticket" />
-                        <h3>Skill and ticket checks</h3>
-                        <p>An expired ticket, a long week, or two jobs at once keeps the name off the shift.</p>
-                        <Link to="/app/people">Open people</Link>
-                    </article>
-                    <article className="card">
-                        <Icon name="field" />
-                        <h3>Field phone</h3>
-                        <p>Accept the shift, sign the docket, and queue a near miss offline.</p>
-                        <Link to="/field">Open the phone</Link>
-                    </article>
-                    <article className="card">
-                        <Icon name="xero" />
-                        <h3>Payroll and Xero</h3>
-                        <p>Approved hours leave as a payroll file and a Xero draft.</p>
-                        <Link to="/app/integrations">Open integrations</Link>
-                    </article>
-                </div>
+                <FeaturePlays />
             </section>
 
             <section className="doors" id="roles">

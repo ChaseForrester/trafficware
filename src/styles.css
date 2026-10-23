@@ -5298,6 +5298,293 @@ code {
   margin-bottom: 6px;
 }
 
+.feature-play h3 {
+  margin: 0;
+  font-size: 22px;
+  letter-spacing: -0.03em;
+}
+
+.play-stage {
+  min-height: 168px;
+}
+
+.play-caption,
+.play-still {
+  min-height: 2.6em;
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 14px;
+}
+
+.play-still {
+  padding-left: 18px;
+}
+
+.play-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.play-dots button {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--white);
+  color: var(--ink-soft);
+  font-weight: 800;
+}
+
+.play-dots button.on {
+  background: #f34f27;
+  border-color: #f34f27;
+  color: #fff;
+}
+
+.crm {
+  height: 168px;
+  padding: 10px;
+  border-radius: 14px;
+  background: #f6f4f2;
+  color: #282c35;
+  overflow: hidden;
+}
+
+.crm-kicker {
+  margin: 0 0 8px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #9a3412;
+}
+
+.crm-cols,
+.crm-track {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.crm-cols span {
+  font-size: 12px;
+  font-weight: 700;
+  color: #6b6258;
+}
+
+.crm-cols span.on {
+  color: #f34f27;
+}
+
+.crm-track {
+  position: relative;
+  height: 36px;
+  margin-top: 4px;
+}
+
+.crm-job {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: calc(33.33% - 4px);
+  padding: 8px;
+  border-radius: 8px;
+  background: #171a20;
+  color: #fff;
+  font-size: 13px;
+  transition: left 0.7s ease;
+}
+
+.crm-board[data-step="1"] .crm-job,
+.crm-board[data-step="2"] .crm-job {
+  left: 66.66%;
+}
+
+.crm-slot-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.crm-slot {
+  grid-column: 3;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 4px;
+  min-height: 42px;
+  padding: 6px 8px;
+  border: 1px dashed #c8c2b8;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 12px;
+}
+
+.crm-open,
+.crm-name {
+  font-style: normal;
+  font-weight: 700;
+}
+
+.crm-name {
+  display: none;
+}
+
+.crm-board[data-step="2"] .crm-open {
+  display: none;
+}
+
+.crm-board[data-step="2"] .crm-name {
+  display: inline;
+  color: #9a3412;
+}
+
+.crm-board[data-step="2"] .crm-slot {
+  border-style: solid;
+  border-color: #f34f27;
+}
+
+.crm-person {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: center;
+  padding: 12px;
+  border-radius: 12px;
+  background: #fff;
+  animation: crm-in 0.45s ease;
+}
+
+.crm-person span {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.crm-person em {
+  font-style: normal;
+  font-size: 13px;
+  color: #5c564e;
+}
+
+.crm-person strong {
+  flex: none;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.crm-bad strong {
+  color: #9f1239;
+}
+
+.crm-good strong {
+  color: #047857;
+}
+
+.crm-phone {
+  display: grid;
+  place-items: center;
+  background: #171a20;
+}
+
+.crm-handset {
+  width: min(100%, 210px);
+}
+
+.crm-screen {
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+  border-radius: 14px;
+  background: #f6f4f2;
+  color: #282c35;
+  animation: crm-in 0.45s ease;
+}
+
+.crm-screen p {
+  margin: 0;
+  font-weight: 800;
+}
+
+.crm-screen small {
+  color: #5c564e;
+}
+
+.crm-accept,
+.crm-sign,
+.crm-queue {
+  justify-self: end;
+  margin-top: 8px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #f34f27;
+  color: #fff;
+  font-style: normal;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.crm-sign,
+.crm-queue {
+  background: #171a20;
+}
+
+.crm-file {
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+  border-radius: 12px;
+  background: #fff;
+  animation: crm-in 0.45s ease;
+}
+
+.crm-file span,
+.crm-file em {
+  color: #5c564e;
+  font-size: 13px;
+  font-style: normal;
+}
+
+.crm-xero {
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 10px;
+}
+
+.crm-xero .brand-mark {
+  width: 72px;
+  height: 40px;
+  padding: 4px;
+}
+
+.crm-xero span {
+  display: grid;
+}
+
+@keyframes crm-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .crm-job,
+  .crm-person,
+  .crm-screen,
+  .crm-file {
+    transition: none;
+    animation: none;
+  }
+}
+
 @media (max-width: 980px) {
 
   .overview-kpis,
