@@ -139,7 +139,7 @@ export function Integrations() {
             <div className="grid-2">
                 {state.integrations.filter((item) => item.id !== 'xero').map((item) => (
                     <article key={item.id} className="card">
-                        <IntegrationMark name={item.name.startsWith('GPS') ? 'GPS' : item.name.startsWith('HR') ? 'HR onboarding' : 'Payroll file'} />
+                        <IntegrationMark name={item.id === 'employment-hero' ? 'Employment Hero' : item.name.startsWith('GPS') ? 'GPS' : 'HR onboarding'} />
                         <p className="kicker">{item.connected ? 'Connected' : 'Not connected'}</p>
                         <h2>{item.name}</h2>
                         <p>{item.blurb}</p>

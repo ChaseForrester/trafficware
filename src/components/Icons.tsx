@@ -39,6 +39,7 @@ export type IconName =
     | 'vercel'
     | 'xai'
     | 'check'
+    | 'search'
 
 const stroke = {
     fill: 'none',
@@ -222,8 +223,9 @@ const MARKS: Record<IconName, ReactNode> = {
     ),
     payroll: wrap(
         <>
-            <rect x="3.5" y="6" width="17" height="12" rx="2" {...stroke} />
-            <path d="M7 12h4M7 15h6M14 11.5v4" {...stroke} />
+            <circle cx="9" cy="9" r="2.2" {...stroke} />
+            <circle cx="15.5" cy="10.2" r="1.7" {...stroke} />
+            <path d="M4.6 18c.6-2.3 2.2-3.5 4.4-3.5s3.7 1.2 4.3 3.5M13.4 14.8c1.1-.4 2.4.1 3.3 1.6" {...stroke} />
         </>,
     ),
     gps: wrap(
@@ -238,12 +240,7 @@ const MARKS: Record<IconName, ReactNode> = {
             <path d="M9 8h6M9 12h6M9 15.5l1.4 1.4L15 12.5" {...stroke} />
         </>,
     ),
-    xero: wrap(
-        <>
-            <path d="M5 5.5h10l4 4V19H5V5.5Z" {...stroke} />
-            <path d="M15 5.5V10h4M8 14h8M8 17h5" {...stroke} />
-        </>,
-    ),
+    xero: wrap(<path d="M6.5 6.5 17.5 17.5M17.5 6.5 6.5 17.5" {...stroke} />),
     card: wrap(
         <>
             <rect x="3" y="6" width="18" height="12" rx="2" {...stroke} />
@@ -279,15 +276,18 @@ const MARKS: Record<IconName, ReactNode> = {
         </>,
     ),
     check: wrap(<path d="M5 12.5 9.2 17 19 7" {...stroke} />),
+    search: wrap(
+        <>
+            <circle cx="11" cy="11" r="6" {...stroke} />
+            <path d="M15.5 15.5 20 20" {...stroke} />
+        </>,
+    ),
 }
 
-const STACK: { name: IconName; label: string }[] = [
-    { name: 'react', label: 'React' },
-    { name: 'typescript', label: 'TypeScript' },
-    { name: 'vite', label: 'Vite' },
-    { name: 'firebase', label: 'Firebase' },
-    { name: 'vercel', label: 'Vercel' },
-    { name: 'xai', label: 'xAI' },
+const STACK = [
+    { src: '/logos/xero.svg', label: 'Xero' },
+    { src: '/logos/employment-hero.png', label: 'Employment Hero' },
+    { src: '/logos/stripe.svg', label: 'Stripe' },
 ]
 
 export function Icon({ name, className }: { name: IconName; className?: string }) {
@@ -305,10 +305,10 @@ export function IconKicker({ name, children, className }: { name: IconName; chil
 
 export function TechStack({ className }: { className?: string }) {
     return (
-        <ul className={cx('tech-stack', className)} aria-label="Built with">
+        <ul className={cx('tech-stack', className)} aria-label="Integrations">
             {STACK.map((item) => (
-                <li key={item.name}>
-                    <Icon name={item.name} />
+                <li key={item.label}>
+                    <img src={item.src} alt="" />
                     <span>{item.label}</span>
                 </li>
             ))}

@@ -26,8 +26,8 @@ export function People() {
         <div className="page-pad">
             <header className="page-title">
                 <div>
-                    <IconKicker name="people">Super admin</IconKicker>
-                    <h1>People, tickets and rates</h1>
+                    <IconKicker name="people">Crew</IconKicker>
+                    <h1>People</h1>
                 </div>
                 <button type="button" className="btn btn-primary btn-small" onClick={() => setAdding((value) => !value)}>
                     {adding ? 'Close' : 'Add person'}
@@ -149,9 +149,9 @@ function PersonDetail({ personId, today }: { personId: string; today: string }) 
                         <p className="muted">{person.title} · {person.phone} · {person.email}</p>
                     </div>
                 </div>
-                <p className="hours-pill">{compliance(person, today)}%</p>
+                <p className="hours-pill">{hours}h</p>
             </header>
-            <p className="muted">{hours}h rostered of {store.state.settings.maxWeekHours}h this week. The score is current tickets plus finished onboarding checks.</p>
+            <p className="muted">{compliance(person, today)}% of tickets and checks are current.</p>
             <div className="ticket-row">
                 {person.skills.map((skill) => {
                     const tone = skill.expires < today ? 'bad' : skill.expires <= horizon ? 'warn' : 'ok'

@@ -129,25 +129,25 @@ export function Home() {
                     <article className="card">
                         <Icon name="board" />
                         <h3>Drag-and-drop rostering</h3>
-                        <p>A week calendar and a day board. Drag a job to another day, or a name onto a slot. The rules answer before the offer goes out.</p>
+                        <p>Drag a job to another day, or a name onto a slot.</p>
                         <Link to="/app/board">Open the board</Link>
                     </article>
                     <article className="card">
                         <Icon name="ticket" />
                         <h3>Skill and ticket checks</h3>
-                        <p>An expired ticket, a long week, a short rest, or two jobs at once keeps the name off the shift.</p>
+                        <p>An expired ticket, a long week, or two jobs at once keeps the name off the shift.</p>
                         <Link to="/app/people">Open people</Link>
                     </article>
                     <article className="card">
                         <Icon name="field" />
                         <h3>Field phone</h3>
-                        <p>The crew accept the shift, sign the docket, and queue a near miss when the site has no signal.</p>
+                        <p>Accept the shift, sign the docket, and queue a near miss offline.</p>
                         <Link to="/field">Open the phone</Link>
                     </article>
                     <article className="card">
                         <Icon name="xero" />
                         <h3>Payroll and Xero</h3>
-                        <p>Approved hours price once, then leave as a payroll file and a Xero draft. The phone never sees the rates.</p>
+                        <p>Approved hours leave as a payroll file and a Xero draft.</p>
                         <Link to="/app/integrations">Open integrations</Link>
                     </article>
                 </div>

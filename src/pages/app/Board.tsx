@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
-import { IconKicker } from '../../components/Icons.tsx'
 import { RosterBoard } from '../../components/RosterBoard.tsx'
 import { WeekRoster } from '../../components/WeekRoster.tsx'
 import { ROLES } from '../../types.ts'
@@ -35,10 +34,7 @@ export function BoardPage() {
     return (
         <div className="page-pad">
             <header className="page-title">
-                <div>
-                    <IconKicker name="board">Drag-and-drop rostering</IconKicker>
-                    <h1>Week view, then the day board</h1>
-                </div>
+                <h1>Booking board</h1>
                 <button type="button" className="btn btn-primary btn-small" onClick={() => setOpen((value) => !value)}>
                     {open ? 'Close form' : 'New job'}
                 </button>

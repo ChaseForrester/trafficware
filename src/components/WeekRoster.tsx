@@ -1,5 +1,7 @@
 import type { DragEvent } from 'react'
 import { Avatar } from './Avatar.tsx'
+import { Icon } from './Icons.tsx'
+import type { IconName } from './Icons.tsx'
 import { addDays, cx, minutesOf, prettyDate, startOfWeek } from '../lib/format.ts'
 import { findClient, slotIssues, vehicleIssues, weekHours } from '../lib/rules.ts'
 import { useStore } from '../lib/store.tsx'
@@ -29,9 +31,13 @@ export function WeekRoster({ date, onDate }: { date: string; onDate: (iso: strin
         <section className="card week-card">
             <header className="job-head">
                 <div>
-                    <p className="kicker">Week view</p>
                     <h2>{prettyDate(days[0])} – {prettyDate(days[6])}</h2>
-                    <p className="muted">Drag a job to another day. Green is a clean crew, amber is a warning, red is a ticket or a rule block. Open slots stay blue.</p>
+                    <p className="week-legend">
+                        <span className="crew-mark crew-ok"><Icon name="check" /> Clean</span>
+                        <span className="crew-mark crew-warn"><Icon name="fatigue" /> Warning</span>
+                        <span className="crew-mark crew-bad"><Icon name="alert" /> Blocked</span>
+                        <span className="crew-mark crew-open"><Icon name="people" /> Open</span>
+                    </p>
                 </div>
                 <div className="hero-actions">
                     <button type="button" className="btn btn-primary btn-small" onClick={fillWeek}>Fill open slots</button>
@@ -78,7 +84,7 @@ export function WeekRoster({ date, onDate }: { date: string; onDate: (iso: strin
                                 <span>
                                     <strong>{person.name}</strong>
                                     <small>{person.title} · {person.depot}</small>
-                                    <em className={`crew-mark crew-${mark.tone}`}>{mark.label}</em>
+                                    <em className={`crew-mark crew-${mark.tone}`}><Icon name={mark.icon} /> {mark.label}</em>
                                 </span>
                             </div>
                         )
@@ -107,7 +113,7 @@ function JobBlock({ state, booking, onOpen }: { state: AppState; booking: Bookin
             }}
             onClick={onOpen}
         >
-            <strong>{booking.title}</strong>
+            <strong><Icon name={TONE_ICON[tone]} /> {booking.title}</strong>
             <span>{client?.name ?? booking.site}</span>
             <em>{names.length ? names.join(', ') : 'Open'}</em>
         </button>
@@ -127,6 +133,13 @@ function blockStyle(start: string, end: string) {
     }
 }
 
+const TONE_ICON: Record<string, IconName> = {
+    ok: 'check',
+    warn: 'fatigue',
+    bad: 'alert',
+    open: 'people',
+}
+
 function jobTone(state: AppState, booking: Booking) {
     const issues = booking.slots.flatMap((slot) => slotIssues(state, booking, slot))
     const vehicle = state.vehicles.find((item) => item.id === booking.vehicleId)
@@ -137,11 +150,11 @@ function jobTone(state: AppState, booking: Booking) {
     return 'ok'
 }
 
-function crewMark(state: AppState, person: Person, date: string) {
-    if (person.status === 'inactive') return { label: 'Inactive', tone: 'bad' }
-    if (person.status === 'onboarding') return { label: 'Onboarding', tone: 'warn' }
-    if (person.status === 'leave' || person.leaveDates.includes(date)) return { label: 'On leave', tone: 'warn' }
-    if (person.skills.some((skill) => skill.expires < date)) return { label: 'Ticket expired', tone: 'bad' }
-    if (weekHours(state, person.id, date) >= state.settings.maxWeekHours) return { label: 'Fatigue risk', tone: 'warn' }
-    return { label: 'Available', tone: 'ok' }
+function crewMark(state: AppState, person: Person, date: string): { label: string; tone: string; icon: IconName } {
+    if (person.status === 'inactive') return { label: 'Inactive', tone: 'bad', icon: 'alert' }
+    if (person.status === 'onboarding') return { label: 'Onboarding', tone: 'warn', icon: 'hr' }
+    if (person.status === 'leave' || person.leaveDates.includes(date)) return { label: 'On leave', tone: 'warn', icon: 'rest' }
+    if (person.skills.some((skill) => skill.expires < date)) return { label: 'Ticket expired', tone: 'bad', icon: 'ticket' }
+    if (weekHours(state, person.id, date) >= state.settings.maxWeekHours) return { label: 'Fatigue risk', tone: 'warn', icon: 'fatigue' }
+    return { label: 'Available', tone: 'ok', icon: 'check' }
 }

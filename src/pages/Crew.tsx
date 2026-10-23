@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { IconKicker } from '../components/Icons.tsx'
-import { CheckRow, ClientRow, IntegrationRow, RoleStories } from '../components/RoleStories.tsx'
+import { CheckRow, IntegrationRow, RoleStories } from '../components/RoleStories.tsx'
 import { useTitle } from '../components/useTitle.ts'
 
 const STORIES = [
@@ -64,9 +64,8 @@ export function Crew() {
                 <div className="section-head">
                     <IconKicker name="clients">The name on the job</IconKicker>
                     <h2>You see the client. You do not see their account.</h2>
-                    <p className="lede">City of Maribyrnong on the offer is the council that booked the sample shift. The office prints the state rule on the docket. You sign the hours.</p>
+                    <p className="lede">The offer names the client who booked the shift. The office prints the state rule on the docket. You sign the hours.</p>
                 </div>
-                <ClientRow />
             </section>
 
             <section className="section wrap">

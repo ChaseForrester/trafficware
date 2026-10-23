@@ -46,7 +46,7 @@ export function Pricing() {
                                 <li key={point}><Icon name="check" /><span>{point}</span></li>
                             ))}
                         </ul>
-                        <Link to="/demo" className={plan.featured ? 'btn btn-amber' : 'btn btn-ghost'}>
+                        <Link to="/demo" className={plan.featured ? 'btn btn-primary' : 'btn btn-ghost'}>
                             Book a demo
                         </Link>
                     </article>

@@ -186,65 +186,47 @@ export function CheckRow() {
     )
 }
 
-export const AUTHORITIES = [
-    ['NSW', 'Transport for NSW', 'TCAWS'],
-    ['VIC', 'Transport Victoria', 'Worksite code'],
-    ['QLD', 'TMR', 'Queensland guide'],
-    ['SA', 'DIT', 'Workzone standard'],
-    ['WA', 'Main Roads', 'Code of practice'],
-    ['TAS', 'State Growth', 'Works guide'],
-    ['ACT', 'Transport Canberra', 'Plan approval'],
-    ['NT', 'Logistics & Infrastructure', 'Roadworks spec'],
+const AUTHORITIES = [
+    { id: 'nsw', name: 'Transport for NSW', rule: 'TCAWS', logo: '/logos/nsw.svg', onDark: false },
+    { id: 'vic', name: 'Transport and Planning', rule: 'Worksite code', logo: '/logos/vic-dtp.svg', onDark: false },
+    { id: 'qld', name: 'Queensland Government', rule: 'TMR guide', logo: '/logos/qld.svg', onDark: false },
+    { id: 'sa', name: 'Infrastructure and Transport', rule: 'Workzone standard', logo: '/logos/dit.png', onDark: false },
+    { id: 'wa', name: 'Main Roads', rule: 'Code of practice', logo: '/logos/mrwa.svg', onDark: true },
+    { id: 'act', name: 'Transport Canberra', rule: 'Plan approval', logo: '/logos/act.png', onDark: false },
 ] as const
 
 export function AuthorityRow() {
     return (
-        <ul className="authority-row">
-            {AUTHORITIES.map(([id, name, rule]) => (
-                <li key={id}>
-                    <b aria-hidden="true">{id}</b>
-                    <strong>{name}</strong>
-                    <em>{rule}</em>
-                </li>
-            ))}
-        </ul>
-    )
-}
-
-export const CLIENTS = [
-    ['MM', 'City of Maribyrnong', 'Council on the sample Geelong job'],
-    ['HC', 'Hart & Co Civil', 'Civil client, billed from the docket'],
-    ['MP', 'Metro Projects', 'Same booking as the roster'],
-    ['VO', 'Venue Ops', 'Event shift, crew and truck together'],
-] as const
-
-export function ClientRow() {
-    return (
-        <ul className="client-row">
-            {CLIENTS.map(([mark, name, text]) => (
-                <li key={name}>
-                    <b aria-hidden="true">{mark}</b>
-                    <strong>{name}</strong>
-                    <span>{text}</span>
-                </li>
-            ))}
-        </ul>
+        <>
+            <ul className="authority-row">
+                {AUTHORITIES.map((item) => (
+                    <li key={item.id}>
+                        <span className={item.onDark ? 'org-logo on-dark' : 'org-logo'}>
+                            <img src={item.logo} alt="" />
+                        </span>
+                        <strong>{item.name}</strong>
+                        <em>{item.rule}</em>
+                    </li>
+                ))}
+            </ul>
+            <p className="logo-credit">South Australian mark © Department for Infrastructure and Transport, <a href="https://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a>.</p>
+        </>
     )
 }
 
 const TILES = [
-    ['Xero', 'Xe', 'Invoices leave as a file the accounts desk can import. Pay is calculated in Trafficware first.'],
-    ['Payroll file', 'Pf', 'Ordinary, night and weekend rates stay in this app. The office export is the file a payroll desk already knows.'],
-    ['GPS', 'Gp', 'A truck ping can confirm the crew arrived. In this demo the ping stays on this device.'],
-    ['Tickets', 'Tc', 'White card, traffic controller, implement TCP, TMA. Expiry is a date on the person, and the roster bot reads it.'],
-    ['HR onboarding', 'Hr', 'A new starter stays off the board until the checks are done.'],
-    ['Stripe', 'St', 'Client payment can sit on the invoice later. The docket does not wait for it.'],
+    ['Xero', 'Invoices leave as a file the accounts desk can import. Pay is calculated in Trafficware first.'],
+    ['Employment Hero', 'Ordinary, night and weekend rates stay in this app. The office export is the file Employment Hero already knows.'],
+    ['GPS', 'A truck ping can confirm the crew arrived. In this demo the ping stays on this device.'],
+    ['Tickets', 'White card, traffic controller, implement TCP, TMA. Expiry is a date on the person, and the roster bot reads it.'],
+    ['HR onboarding', 'A new starter stays off the board until the checks are done.'],
+    ['Stripe', 'Client payment can sit on the invoice later. The docket does not wait for it.'],
 ] as const
 
 export function IntegrationRow() {
     return (
         <div className="integrate-row">
-            {TILES.map(([name, , text]) => (
+            {TILES.map(([name, text]) => (
                 <article key={name}>
                     <IntegrationMark name={name} />
                     <p className="kicker">{name}</p>

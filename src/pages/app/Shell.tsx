@@ -123,7 +123,7 @@ export function AppShell() {
                     </div>
                     {!field && (
                         <form className="app-search" role="search" onSubmit={(event) => event.preventDefault()}>
-                            <Icon name="people" />
+                            <Icon name="search" />
                             <input
                                 value={query}
                                 onChange={(event) => setQuery(event.target.value)}

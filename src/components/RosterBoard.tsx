@@ -30,7 +30,7 @@ export function RosterBoard({ compact = false, focusDate, onFocusDate }: { compa
     }
     const [depot, setDepot] = useState('All')
     const [over, setOver] = useState<string | null>(null)
-    const [showBot, setShowBot] = useState(!compact)
+    const [showBot, setShowBot] = useState(false)
     const plan = useMemo(() => rosterPlan(state, date, depot), [state, date, depot])
     const days = Array.from({ length: 7 }, (_, index) => addDays(startOfWeek(date), index))
     const bookings = state.bookings
@@ -49,7 +49,7 @@ export function RosterBoard({ compact = false, focusDate, onFocusDate }: { compa
         <section className={cx('board', compact && 'board-compact')}>
             <header className="board-bar">
                 <div>
-                    <IconKicker name="board">Live booking board</IconKicker>
+                    <IconKicker name="board">{compact ? 'Live board' : 'This day'}</IconKicker>
                     <h2>{prettyLong(date)}</h2>
                 </div>
                 <div className="board-actions">

@@ -72,15 +72,27 @@ export function DoneTick() {
 }
 
 const ICONS: Record<string, IconName> = {
-    Xero: 'xero',
-    'Payroll file': 'payroll',
     GPS: 'gps',
     Tickets: 'ticket',
     'HR onboarding': 'hr',
-    Stripe: 'card',
+    'Payroll file': 'payroll',
+}
+
+const LOGOS: Record<string, string> = {
+    Xero: '/logos/xero.svg',
+    'Employment Hero': '/logos/employment-hero.png',
+    Stripe: '/logos/stripe.svg',
 }
 
 export function IntegrationMark({ name }: { name: string }) {
+    const logo = LOGOS[name]
+    if (logo) {
+        return (
+            <span className="brand-mark is-logo">
+                <img src={logo} alt="" />
+            </span>
+        )
+    }
     const icon = ICONS[name]
     if (!icon) return <b className="brand-mark" aria-hidden="true">{name.slice(0, 2)}</b>
     return (

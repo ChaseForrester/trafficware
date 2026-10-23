@@ -8,7 +8,8 @@ import { useStore } from '../lib/store.tsx'
 import type { AppState, Booking, Docket, Person, Slot } from '../types.ts'
 import { Avatar } from './Avatar.tsx'
 import { BotMark } from './BotMark.tsx'
-import { IconKicker } from './Icons.tsx'
+import { Icon, IconKicker } from './Icons.tsx'
+import type { IconName } from './Icons.tsx'
 import { PLAYS, isPlayId } from './botPlays.ts'
 import type { Play } from './botPlays.ts'
 
@@ -328,6 +329,15 @@ export function Interactions() {
         setLines(readPlay(routed, state, today))
     }
 
+    const PLAY_ICONS: Record<string, IconName> = {
+        'roster-alerts': 'alert',
+        'roster-suggest': 'people',
+        'board-checks': 'fatigue',
+        'field-push': 'field',
+        'field-docket': 'dockets',
+        closeout: 'payroll',
+    }
+
     const current = PLAYS.find((item) => item.id === play) ?? PLAYS[0]
     const { visible, working } = useTrace(lines)
     const latest = visible[visible.length - 1]
@@ -351,10 +361,7 @@ export function Interactions() {
                     <div>
                         <IconKicker name="bot">Six automations</IconKicker>
                         <h2>Watch the bot do the job.</h2>
-                        <p className="lede">
-                            Each one is a bot from the yard diagram, reading and writing this sample yard.
-                            The mark loops while it works. The lines are the checks it actually ran.
-                        </p>
+                        <p className="lede">Pick one. It runs on this yard, and the mark on the right loops while it works.</p>
                     </div>
                     <p className="write-pill">This writes to the workspace</p>
                 </div>
@@ -367,7 +374,7 @@ export function Interactions() {
                                     aria-current={item.id === play ? 'true' : undefined}
                                     onClick={() => choose(item.id)}
                                 >
-                                    <BotMark bot={item.bot} size={42} working={item.id === play && working} />
+                                    <span className={`play-ico play-ico-${item.bot}`}><Icon name={PLAY_ICONS[item.id]} /></span>
                                     <span>
                                         <em>0{index + 1} · {item.botName}</em>
                                         <strong>{item.title}</strong>

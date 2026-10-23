@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { IconKicker } from '../components/Icons.tsx'
-import { AuthorityRow, CheckRow, ClientRow, IntegrationRow, RoleStories } from '../components/RoleStories.tsx'
+import { AuthorityRow, CheckRow, IntegrationRow, RoleStories } from '../components/RoleStories.tsx'
 import { useTitle } from '../components/useTitle.ts'
 
 const STORIES = [
@@ -62,11 +62,10 @@ export function Business() {
 
             <section className="section wrap">
                 <div className="section-head">
-                    <IconKicker name="clients">Councils and clients</IconKicker>
-                    <h2>The job names the client. The docket names the state rule.</h2>
-                    <p className="lede">City of Maribyrnong is a sample council on the Geelong job, not a login. The printable docket cites the instrument for the state the work was in. The sheet is not a copy of the manual.</p>
+                    <IconKicker name="clients">State rules</IconKicker>
+                    <h2>The docket names the authority for the state the work was in.</h2>
+                    <p className="lede">The printable sheet cites that instrument. It is not a copy of the manual. Each card below uses the authority’s own mark.</p>
                 </div>
-                <ClientRow />
                 <AuthorityRow />
             </section>
 
@@ -74,7 +73,7 @@ export function Business() {
                 <div className="section-head">
                     <IconKicker name="integrations">Same names as the office screen</IconKicker>
                     <h2>Integrations the desk already recognises.</h2>
-                    <p className="lede">Open them later under Integrations. The marks here are ours, so the name is familiar without borrowing another company’s logo. Field phones do not get these switches.</p>
+                    <p className="lede">Open them later under Integrations. Xero, Employment Hero and Stripe use their own marks. GPS, tickets and onboarding are checks this yard runs. Field phones do not get these switches.</p>
                 </div>
                 <IntegrationRow />
                 <p className="page-next"><Link className="btn btn-primary" to="/start">Open the office</Link></p>
