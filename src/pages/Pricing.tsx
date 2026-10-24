@@ -1,42 +1,78 @@
-import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { DemoForm } from '../components/DemoForm.tsx'
+import { useGrok } from '../components/GrokDock.tsx'
 import { Icon, IconKicker } from '../components/Icons.tsx'
 import { useTitle } from '../components/useTitle.ts'
+import { AU_STATES, NATIONAL, STATE_CONDUCT } from '../lib/conduct.ts'
 
 const plans = [
     {
-        name: 'Crew',
-        price: '$490',
-        note: 'per month, one depot',
-        points: ['Up to 25 people', 'Booking board and field app', 'Ticket and fatigue checks', 'Dockets and CSV export'],
+        name: 'Trial',
+        price: 'Free',
+        note: 'Read-only demo yard',
+        points: ['Look around the sample yard', 'See the booking board and dockets', 'Nothing to install, nothing to pay'],
+        cta: { to: '/app', label: 'Open the demo yard' },
     },
     {
-        name: 'Depot',
-        price: '$990',
-        note: 'per month, the working yard',
-        points: ['Up to 80 people', 'Roster bot and close-out bot', 'Payroll rates and invoices', 'Xero and Employment Hero files'],
+        name: 'Core',
+        price: '$150–250',
+        note: 'per month, indicative demo figure',
+        points: ['One yard', 'Booking board', 'Roster bot', 'Field sync', 'Dockets'],
         featured: true,
+        cta: { to: '/demo', label: 'Book a demo' },
     },
     {
-        name: 'Network',
-        price: '$1,890',
-        note: 'per month, multi-depot',
-        points: ['Unlimited depots in the workspace', 'GPS telematics and HR onboarding', 'Field sync across crews', 'Shared clients and fleet'],
+        name: 'Pro',
+        price: '$400–600',
+        note: 'per month, indicative demo figure',
+        points: ['Everything in Core', 'Xero', 'Payroll export', 'Close-out bot', 'Grok actions', 'MCP access'],
+        cta: { to: '/demo', label: 'Book a demo' },
     },
 ]
 
+const faqs = [
+    {
+        q: 'What is a demo figure?',
+        a: 'The prices on this page are indicative ranges for the demo workspace. They show the shape of the offer. There is no live checkout, and nothing on this page charges a card.',
+    },
+    {
+        q: 'Is my state covered?',
+        a: 'The docket carries a citation block for all eight states and territories: NSW, VIC, QLD, SA, WA, TAS, ACT and NT. Each state block names the traffic management instrument for that state. The Australian Consumer Law line, enforced by the ACCC, sits on every docket.',
+    },
+    {
+        q: 'Can I cancel?',
+        a: 'There is no paid plan to cancel yet. The Trial is free and read-only, and the demo data is yours to reset. Paid terms will be set before any live checkout opens.',
+    },
+]
+
+const SAMPLE_STATES = ['NSW', 'VIC', 'QLD'] as const
+
 export function Pricing() {
     useTitle('Pricing · Trafficware')
+    const grok = useGrok()
     return (
         <main className="wrap page">
             <header className="page-hero">
-                <IconKicker name="pricing">Pricing</IconKicker>
-                <h1 className="display">Month to month, sized by the yard.</h1>
+                <IconKicker name="rules">Every printable docket</IconKicker>
+                <h1 className="display">Your docket is audit-ready in every state.</h1>
                 <p className="lede">
-                    These figures are for the demo workspace so you can see the shape of the offer. They are not a live checkout.
+                    Each docket cites the Australian Consumer Law line enforced by the ACCC, plus the traffic management
+                    instrument for the state or territory on the job. All eight are built in.
                 </p>
             </header>
-            <div className="price-grid">
+
+            <section className="card page-gap answer-capsule" aria-label="Pricing in short">
+                <h2>Pricing in short</h2>
+                <p>
+                    Trafficware has three plans. Trial is free and gives you a read-only demo yard. Core is $150–250 a month
+                    for one yard with the booking board, roster bot, field sync and dockets. Pro is $400–600 a month and adds
+                    Xero, payroll export, the close-out bot, Grok actions and MCP access. These are indicative demo figures,
+                    not a live checkout. Every printable docket cites the ACCC consumer law line and the instrument for
+                    NSW, VIC, QLD, SA, WA, TAS, ACT or NT.
+                </p>
+            </section>
+
+            <div className="price-grid page-gap">
                 {plans.map((plan) => (
                     <article key={plan.name} className={plan.featured ? 'price featured' : 'price'}>
                         <IconKicker name="pricing">{plan.name}</IconKicker>
@@ -47,67 +83,80 @@ export function Pricing() {
                                 <li key={point}><Icon name="check" /><span>{point}</span></li>
                             ))}
                         </ul>
-                        <Link to="/demo" className={plan.featured ? 'btn btn-primary' : 'btn btn-ghost'}>
-                            Book a demo
+                        <Link to={plan.cta.to} className={plan.featured ? 'btn btn-primary' : 'btn btn-ghost'}>
+                            {plan.cta.label}
                         </Link>
                     </article>
                 ))}
             </div>
-            <div className="card page-gap">
-                <h2>What every plan includes</h2>
-                <ul className="check-list icon-list">
-                    <li><Icon name="people" /><span>People, skills, documents and employment status</span></li>
-                    <li><Icon name="board" /><span>Drag-and-drop roster with clash, rest and fatigue checks</span></li>
-                    <li><Icon name="field" /><span>Field accept / decline, digital dockets and near misses</span></li>
-                    <li><Icon name="cloud" /><span>Offline outbox and a sync step you can see</span></li>
-                    <li><Icon name="check" /><span>No lock-in story: the demo data is yours to reset</span></li>
-                </ul>
-                <Link to="/app">Skip the form and open the sample yard</Link>
-            </div>
-            <YardEstimate />
+            <p className="muted">Indicative demo figures in Australian dollars. Not a live checkout.</p>
+
+            <section className="card page-gap" aria-label="Sample docket footer">
+                <IconKicker name="dockets">Sample · not a real job</IconKicker>
+                <h2>What the bottom of a printed docket says</h2>
+                <p className="muted">
+                    This is a sample footer built from the citation text inside the app. It is not a customer docket and shows no customer result.
+                </p>
+                <div className="docket-sample" style={{ border: '1px dashed currentColor', borderRadius: 12, padding: '1rem', fontSize: '0.9rem' }}>
+                    <p><strong>National:</strong> {NATIONAL.standard}</p>
+                    <p><strong>Consumer law:</strong> Australian Consumer Law, Schedule 2 to the Competition and Consumer Act 2010 (Cth), enforced by the ACCC.</p>
+                    {SAMPLE_STATES.map((id) => (
+                        <p key={id}><strong>{id} · {STATE_CONDUCT[id].authority}:</strong> {STATE_CONDUCT[id].instrument}</p>
+                    ))}
+                    <p className="muted">One state block prints per docket, matched to the job. Shown here: three of eight.</p>
+                </div>
+                <details className="page-gap">
+                    <summary>All eight state and territory instruments</summary>
+                    <ul className="icon-list">
+                        {AU_STATES.map((id) => (
+                            <li key={id}><Icon name="rules" /><span><strong>{id} · {STATE_CONDUCT[id].authority}:</strong> {STATE_CONDUCT[id].instrument}</span></li>
+                        ))}
+                    </ul>
+                </details>
+                <p><Link to="/dockets/codes">State codes on the docket</Link></p>
+            </section>
+
+            <section className="card page-gap" aria-label="Questions">
+                <h2>Questions people ask first</h2>
+                {faqs.map((item) => (
+                    <div key={item.q}>
+                        <h3>{item.q}</h3>
+                        <p>{item.a}</p>
+                    </div>
+                ))}
+            </section>
+
+            <section className="card page-gap" id="talk" aria-label="Talk to us">
+                <IconKicker name="bot">Ask or leave your details</IconKicker>
+                <h2>Not sure which plan fits the yard?</h2>
+                <p>Ask in the chat, or leave your details below. The request is saved in this demo workspace. No email is sent.</p>
+                <div className="hero-actions">
+                    <button
+                        type="button"
+                        className="btn btn-primary"
+                        onClick={() => grok.openWith('I am looking at pricing. Which plan, Trial, Core or Pro, fits a traffic company like mine?')}
+                    >
+                        Ask in the chat
+                    </button>
+                    <Link to="/app" className="btn btn-ghost">Open the demo yard</Link>
+                </div>
+                <DemoForm />
+            </section>
+
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                    __html: JSON.stringify({
+                        '@context': 'https://schema.org',
+                        '@type': 'FAQPage',
+                        mainEntity: faqs.map((item) => ({
+                            '@type': 'Question',
+                            name: item.q,
+                            acceptedAnswer: { '@type': 'Answer', text: item.a },
+                        })),
+                    }),
+                }}
+            />
         </main>
-    )
-}
-
-function YardEstimate() {
-    const [people, setPeople] = useState(40)
-    const [shifts, setShifts] = useState(30)
-    const [missed, setMissed] = useState(4)
-    const [cost, setCost] = useState(450)
-    const missedMonth = Math.max(0, shifts) * 4 * (Math.max(0, missed) / 100)
-    const dollars = missedMonth * Math.max(0, cost)
-    const money = new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD', maximumFractionDigits: 0 }).format(dollars)
-
-    return (
-        <section className="card page-gap">
-            <IconKicker name="pricing">Estimate</IconKicker>
-            <h2>What an empty shift costs this yard</h2>
-            <p>
-                Type your own figures. This is an estimate for the conversation next to the demo prices. It is not a measured result from a Trafficware customer.
-            </p>
-            <div className="roi-grid">
-                <label className="field">
-                    People in the yard
-                    <input type="number" min="1" value={people} onChange={(event) => setPeople(Number(event.target.value))} />
-                </label>
-                <label className="field">
-                    Shifts in a week
-                    <input type="number" min="0" value={shifts} onChange={(event) => setShifts(Number(event.target.value))} />
-                </label>
-                <label className="field">
-                    Shifts that fall over, percent
-                    <input type="number" min="0" max="100" value={missed} onChange={(event) => setMissed(Number(event.target.value))} />
-                </label>
-                <label className="field">
-                    Cost of one empty shift, dollars
-                    <input type="number" min="0" value={cost} onChange={(event) => setCost(Number(event.target.value))} />
-                </label>
-            </div>
-            <p>
-                At these figures, about {missedMonth.toFixed(1)} shifts a month go unfilled, which is about {money} before anyone is replaced.
-                A yard of {Math.max(0, people)} people sits nearest the {people <= 25 ? 'Crew plan at $490' : people <= 80 ? 'Depot plan at $990' : 'Network plan at $1,890'} on this page.
-            </p>
-            <p className="muted">The plan figures are demo pricing. They are not a checkout.</p>
-        </section>
     )
 }

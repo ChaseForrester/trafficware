@@ -54,7 +54,7 @@ const BAND = [
 ]
 
 export function Home() {
-    useTitle('Trafficware · Put the right crew on the right job')
+    useTitle('Trafficware · The yard runs itself')
     const { state, today } = useStore()
     const todayJobs = state.bookings.filter((booking) => booking.date === today)
     const openSlots = todayJobs.reduce((sum, booking) => sum + booking.slots.filter((slot) => !slot.personId).length, 0)
@@ -80,10 +80,9 @@ export function Home() {
                     <div className="billboard-copy">
                         <div className="desk-only">
                             <IconKicker name="board" className="kicker-on-dark">Traffic operations</IconKicker>
-                            <h1>Put the right crew on the right job.</h1>
+                            <h1>The yard runs itself.</h1>
                             <p className="lede">
-                                Trafficware is the booking board for traffic companies. Open a shift, drop a name,
-                                and the yard rules answer before anyone leaves the depot.
+                                Roster, dockets, invoices — handled. You just say yes.
                             </p>
                             <div className="hero-actions">
                                 <a className="btn btn-amber" href="#roles">Choose a role</a>
@@ -96,8 +95,8 @@ export function Home() {
                             </div>
                         </div>
                         <div className="phone-only phone-hero">
-                            <h1>Put the right crew<br />on the <em>right job.</em></h1>
-                            <p className="lede">See the live booking board and yard rules at a glance, so you roster with confidence.</p>
+                            <h1>The yard<br /><em>runs itself.</em></h1>
+                            <p className="lede">Roster, dockets, invoices — handled. You just say yes.</p>
                             <div className="phone-actions">
                                 <a className="btn phone-role" href="#roles"><Icon name="user" /> Choose a role</a>
                                 <a className="btn phone-watch" href="#how"><Icon name="play" /> Watch the six automations</a>
